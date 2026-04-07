@@ -30,6 +30,11 @@
     "plugins": [
       "@react-native-firebase/app",
       "expo-dev-client"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "ce179ada-6382-49b3-9018-d21b8151bc8c"
+      }
+    }
   }
 }
