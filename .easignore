@@ -1,0 +1,44 @@
+# EAS Build ignore — mirrors .gitignore but intentionally includes
+# google-services.json and GoogleService-Info.plist so EAS cloud
+# builds can access the Firebase config. These files are still
+# excluded from git via .gitignore.
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+# generated native folders
+/ios
+/android
