@@ -44,6 +44,14 @@ export async function updatePaletteInProject(projectId, paletteId, changes) {
   await saveProjects(updated);
 }
 
+export async function updateProject(projectId, changes) {
+  const projects = await loadProjects();
+  const updated = projects.map(p =>
+    p.id === projectId ? { ...p, ...changes } : p
+  );
+  await saveProjects(updated);
+}
+
 export async function removePaletteFromProject(projectId, paletteId) {
   const projects = await loadProjects();
   const updated = projects.map(p => {

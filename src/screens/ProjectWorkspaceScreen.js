@@ -21,16 +21,33 @@ const BRAND = {
 export default function ProjectWorkspaceScreen({ navigation, route }) {
   const { projectId, projectName, projectType } = route.params;
   const [palettes, setPalettes] = useState([]);
+  const [project, setProject]   = useState(null);
 
   // Reload every time the screen comes into focus (e.g. after a save or update)
   useFocusEffect(
     useCallback(() => {
       loadProjects().then((projects) => {
-        const project = projects.find(p => p.id === projectId);
-        setPalettes(project?.palettes || []);
+        const found = projects.find(p => p.id === projectId);
+        setProject(found || null);
+        setPalettes(found?.palettes || []);
       });
     }, [projectId])
   );
+
+  // Add edit button to header
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={() => project && navigation.navigate('EditProject', { project })}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          style={{ marginLeft: 8 }}
+        >
+          <Ionicons name="pencil-outline" size={20} color="#fff" />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, project]);
 
   const handleResumeEdit = (palette) => {
     navigation.navigate('ColorWheel', {
@@ -69,8 +86,17 @@ export default function ProjectWorkspaceScreen({ navigation, route }) {
       {/* Project header card */}
       <View style={styles.projectCard}>
         <View style={styles.projectCardLeft}>
-          <Text style={styles.projectName}>{projectName}</Text>
-          <Text style={styles.projectType}>{projectType}</Text>
+          <Text style={styles.projectName}>{project?.name || projectName}</Text>
+          {project?.stage ? (
+            <Text style={styles.projectStage}>{project.stage}</Text>
+          ) : (
+            <Text style={styles.projectType}>{projectType}</Text>
+          )}
+          {project?.progress != null && (
+            <View style={styles.progressTrack}>
+              <View style={[styles.progressFill, { width: `${Math.round(project.progress * 100)}%` }]} />
+            </View>
+          )}
         </View>
         <View style={styles.typeBadge}>
           <Text style={styles.typeBadgeText}>{projectType}</Text>
@@ -141,6 +167,12 @@ const styles = StyleSheet.create({
   projectCardLeft: { flex: 1 },
   projectName:     { fontSize: 16, fontWeight: '700', color: BRAND.lt },
   projectType:     { fontSize: 11, color: BRAND.mu, marginTop: 2 },
+  projectStage:    { fontSize: 11, color: BRAND.plum, fontWeight: '600', marginTop: 2 },
+  progressTrack: {
+    height: 5, backgroundColor: '#e8e0f0',
+    borderRadius: 3, overflow: 'hidden', marginTop: 8, marginRight: 12,
+  },
+  progressFill: { height: '100%', backgroundColor: BRAND.mint, borderRadius: 3 },
   typeBadge: {
     backgroundColor: 'rgba(192,132,252,0.18)',
     borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4,

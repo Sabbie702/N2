@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import ProjectsScreen         from '../screens/ProjectsScreen';
 import NewProjectScreen       from '../screens/NewProjectScreen';
 import ProjectWorkspaceScreen from '../screens/ProjectWorkspaceScreen';
+import EditProjectScreen      from '../screens/EditProjectScreen';
 import ColorWheelScreen       from '../screens/ColorWheelScreen';
 import COLORS from '../styles/colors';
 
@@ -64,6 +65,12 @@ export default function ProjectsStack() {
         name="ProjectWorkspace"
         component={ProjectWorkspaceScreen}
         options={({ route }) => ({ title: route.params?.projectName || 'Project' })}
+      />
+
+      <Stack.Screen
+        name="EditProject"
+        component={EditProjectScreen}
+        options={{ title: 'Edit Project' }}
       />
 
       {/* ColorWheel pushed from ProjectWorkspace — uses navigation header */}
