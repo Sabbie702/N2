@@ -35,7 +35,7 @@ function EmptyNotes({ searching }) {
   );
 }
 
-export default function NotesScreen() {
+export default function NotesScreen({ navigation }) {
   const [notes, setNotes]           = useState([]);
   const [query, setQuery]           = useState('');
   const [searching, setSearching]   = useState(false);
@@ -110,7 +110,14 @@ export default function NotesScreen() {
           </>
         ) : (
           <>
-            <Text style={styles.headerTitle}>Notes</Text>
+            <View style={styles.headerLeft}>
+              {navigation?.canGoBack() && (
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBtn}>
+                  <Ionicons name="arrow-back" size={20} color={COLORS.LAVENDER_WHITE} />
+                </TouchableOpacity>
+              )}
+              <Text style={styles.headerTitle}>Notes</Text>
+            </View>
             <TouchableOpacity onPress={startSearch} style={styles.headerBtn}>
               <Ionicons name="search" size={20} color={COLORS.LAVENDER_WHITE} />
             </TouchableOpacity>
@@ -175,8 +182,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 12,
     gap: 10,
   },
+  headerLeft: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
   headerTitle: {
-    flex: 1, fontSize: 18, fontWeight: 'bold',
+    fontSize: 18, fontWeight: 'bold',
     color: COLORS.LAVENDER_WHITE,
   },
   headerBtn: {

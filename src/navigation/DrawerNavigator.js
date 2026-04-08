@@ -9,11 +9,7 @@ import {
 import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
 
-import TabNavigator    from './TabNavigator';
-import HomeScreen      from '../screens/HomeScreen';
-import NotesScreen     from '../screens/NotesScreen';
-import ProfileScreen   from '../screens/ProfileScreen';
-import SettingsScreen  from '../screens/SettingsScreen';
+import TabNavigator from './TabNavigator';
 import COLORS from '../styles/colors';
 
 const Drawer = createDrawerNavigator();
@@ -46,13 +42,20 @@ function CustomDrawerContent(props) {
 
       <DrawerContentScrollView {...props} scrollEnabled={false}>
         {DRAWER_ITEMS.map((item) => {
-          const isActive = activeRoute === item.name ||
-            (activeRoute === 'MainTabs' && item.name === 'Home');
+          const isActive = activeRoute === 'MainTabs' && item.name === 'Home';
+          const handleNav = () => {
+            if (item.name === 'Home') {
+              navigation.navigate('MainTabs', { screen: 'Home', params: { screen: 'HomeMain' } });
+            } else {
+              navigation.navigate('MainTabs', { screen: 'Home', params: { screen: item.name } });
+            }
+            navigation.closeDrawer();
+          };
           return (
             <TouchableOpacity
               key={item.name}
               style={[drawer.item, isActive && drawer.itemActive]}
-              onPress={() => navigation.navigate(item.name)}
+              onPress={handleNav}
               activeOpacity={0.8}
             >
               <Ionicons
@@ -89,14 +92,8 @@ export default function DrawerNavigator() {
         },
       }}
     >
-      {/* Main app — bottom tabs */}
+      {/* All screens live inside the tab navigator — drawer is navigation-only */}
       <Drawer.Screen name="MainTabs" component={TabNavigator} />
-
-      {/* Drawer-only screens */}
-      <Drawer.Screen name="Home"     component={HomeScreen} />
-      <Drawer.Screen name="Notes"    component={NotesScreen} />
-      <Drawer.Screen name="Profile"  component={ProfileScreen} />
-      <Drawer.Screen name="Settings" component={SettingsScreen} />
     </Drawer.Navigator>
   );
 }

@@ -132,11 +132,13 @@ export default function HomeScreen({ navigation }) {
 
         {/* Donut chart */}
         <View style={styles.chartWrap}>
-          <DonutChart stats={STATS} size={220} />
-          {/* Center label */}
-          <View style={styles.chartCenter}>
-            <Text style={styles.chartCenterNum}>{STATS.ufos}</Text>
-            <Text style={styles.chartCenterLabel}>UFOs</Text>
+          <View style={styles.chartSvgWrap}>
+            <DonutChart stats={STATS} size={220} />
+            {/* Center label — positioned over the SVG only */}
+            <View style={styles.chartCenter}>
+              <Text style={styles.chartCenterNum}>{STATS.ufos}</Text>
+              <Text style={styles.chartCenterLabel}>UFOs</Text>
+            </View>
           </View>
           {/* Legend */}
           <View style={styles.legend}>
@@ -238,9 +240,10 @@ const styles = StyleSheet.create({
   },
 
   // Donut chart
-  chartWrap: { alignItems: 'center', marginVertical: 10, position: 'relative' },
+  chartWrap: { alignItems: 'center', marginVertical: 10 },
+  chartSvgWrap: { width: 220, height: 220 },
   chartCenter: {
-    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    position: 'absolute', top: 0, left: 0, width: 220, height: 220,
     alignItems: 'center', justifyContent: 'center',
   },
   chartCenterNum: { fontSize: 26, fontWeight: '800', color: COLORS.DEEP_PLUM },

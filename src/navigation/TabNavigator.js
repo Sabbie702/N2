@@ -8,6 +8,7 @@ import { Text, TouchableOpacity } from 'react-native';
 import { DrawerActions } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
+import HomeStack     from './HomeStack';
 import StashScreen    from '../screens/StashScreen';
 import ProjectsStack  from './ProjectsStack';
 import ColorStack     from './ColorStack';
@@ -57,6 +58,15 @@ export default function TabNavigator() {
         headerLeft: () => <HamburgerButton navigation={navigation} />,
       })}
     >
+      <Tab.Screen
+        name="Home"
+        component={HomeStack}
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" focused={focused} />,
+        }}
+      />
+
       <Tab.Screen
         name="Stash"
         component={StashScreen}
