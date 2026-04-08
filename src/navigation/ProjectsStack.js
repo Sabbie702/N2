@@ -6,6 +6,8 @@
 import React from 'react';
 import { TouchableOpacity, Text } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { DrawerActions } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 
 import ProjectsScreen         from '../screens/ProjectsScreen';
 import NewProjectScreen       from '../screens/NewProjectScreen';
@@ -30,6 +32,15 @@ export default function ProjectsStack() {
         component={ProjectsScreen}
         options={({ navigation }) => ({
           title: 'Projects',
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              style={{ marginRight: 4 }}
+            >
+              <Ionicons name="menu" size={24} color={COLORS.LAVENDER_WHITE} />
+            </TouchableOpacity>
+          ),
           headerRight: () => (
             <TouchableOpacity
               onPress={() => navigation.navigate('NewProject')}
@@ -55,11 +66,15 @@ export default function ProjectsStack() {
         options={({ route }) => ({ title: route.params?.projectName || 'Project' })}
       />
 
-      {/* ColorWheel pushed from ProjectWorkspace when resuming palette editing */}
+      {/* ColorWheel pushed from ProjectWorkspace — uses navigation header */}
       <Stack.Screen
         name="ColorWheel"
         component={ColorWheelScreen}
-        options={{ headerShown: false }} // Screen manages its own header
+        options={({ route }) => ({
+          title: route.params?.resumePalette
+            ? 'Edit Palette'
+            : 'Color Wheel',
+        })}
       />
 
     </Stack.Navigator>

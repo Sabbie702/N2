@@ -1,17 +1,17 @@
 // TabNavigator.js
-// 6-tab bottom navigator for Nimble Needle.
+// 4-tab bottom navigator: Stash, Projects, Colors, Discover.
+// Home and Notes live in the drawer (hamburger).
 
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text } from 'react-native';
+import { Text, TouchableOpacity } from 'react-native';
+import { DrawerActions } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 
-import HomeScreen    from '../screens/HomeScreen';
-import StashScreen   from '../screens/StashScreen';
-import ProjectsStack from './ProjectsStack';
-import ColorStack    from './ColorStack';
+import StashScreen    from '../screens/StashScreen';
+import ProjectsStack  from './ProjectsStack';
+import ColorStack     from './ColorStack';
 import DiscoverScreen from '../screens/DiscoverScreen';
-import ProfileScreen  from '../screens/ProfileScreen';
-
 import COLORS from '../styles/colors';
 
 const Tab = createBottomTabNavigator();
@@ -24,10 +24,23 @@ function TabIcon({ emoji, focused }) {
   );
 }
 
+// Hamburger button for tab screen headers
+function HamburgerButton({ navigation }) {
+  return (
+    <TouchableOpacity
+      onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+      style={{ marginLeft: 14 }}
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+    >
+      <Ionicons name="menu" size={24} color={COLORS.LAVENDER_WHITE} />
+    </TouchableOpacity>
+  );
+}
+
 export default function TabNavigator() {
   return (
     <Tab.Navigator
-      screenOptions={{
+      screenOptions={({ navigation }) => ({
         tabBarStyle: {
           backgroundColor: COLORS.MIDNIGHT,
           borderTopColor: COLORS.DEEP_PLUM,
@@ -41,17 +54,9 @@ export default function TabNavigator() {
         headerStyle:      { backgroundColor: COLORS.DEEP_PLUM },
         headerTintColor:  COLORS.LAVENDER_WHITE,
         headerTitleStyle: { fontWeight: 'bold' },
-      }}
+        headerLeft: () => <HamburgerButton navigation={navigation} />,
+      })}
     >
-      <Tab.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" focused={focused} />,
-        }}
-      />
-
       <Tab.Screen
         name="Stash"
         component={StashScreen}
@@ -61,7 +66,6 @@ export default function TabNavigator() {
         }}
       />
 
-      {/* Projects tab — ProjectsStack owns its own header */}
       <Tab.Screen
         name="Projects"
         component={ProjectsStack}
@@ -71,7 +75,6 @@ export default function TabNavigator() {
         }}
       />
 
-      {/* Color Wheel tab — ColorStack owns its own header */}
       <Tab.Screen
         name="Colors"
         component={ColorStack}
@@ -88,15 +91,6 @@ export default function TabNavigator() {
         options={{
           title: 'Discover',
           tabBarIcon: ({ focused }) => <TabIcon emoji="🔍" focused={focused} />,
-        }}
-      />
-
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ focused }) => <TabIcon emoji="👤" focused={focused} />,
         }}
       />
     </Tab.Navigator>

@@ -78,32 +78,6 @@ export default function ColorWheelScreen({ navigation, route }) {
 
   return (
     <View style={styles.screen}>
-      {/* ── Custom header ── */}
-      <View style={styles.header}>
-        {isResuming ? (
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backBtn}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Ionicons name="chevron-back" size={16} color={BRAND.plum} />
-            <Text style={styles.backText}>Project</Text>
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.n2Badge}>
-            <Text style={styles.n2Text}>N2</Text>
-          </View>
-        )}
-        <View style={styles.headerTitle}>
-          <Text style={styles.title}>Color Wheel</Text>
-          <Text style={styles.subtitle}>
-            {isResuming
-              ? `Editing: ${PALETTE_TYPES[palette.paletteTypeId]?.label} palette`
-              : 'lock the colors you love · re-stitch the rest'}
-          </Text>
-        </View>
-      </View>
-
       <ScrollView showsVerticalScrollIndicator={false}>
 
         {/* Resume editing banner */}
