@@ -11,7 +11,6 @@ import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigatio
 import { Ionicons } from '@expo/vector-icons';
 
 import TabNavigator from './TabNavigator';
-import HomeStack    from './HomeStack';
 import COLORS from '../styles/colors';
 
 const Drawer = createDrawerNavigator();
@@ -49,8 +48,7 @@ function CustomDrawerContent(props) {
               key={item.name}
               style={[drawer.item, isActive && drawer.itemActive]}
               onPress={() => {
-                // Navigate to HomeNav stack, pushing the right screen
-                navigation.navigate('HomeNav', { screen: item.screen });
+                navigation.navigate('MainTabs', { screen: 'Home', params: { screen: item.screen } });
                 navigation.closeDrawer();
               }}
               activeOpacity={0.8}
@@ -90,11 +88,8 @@ export default function DrawerNavigator() {
         },
       }}
     >
-      {/* Main 4-tab navigator */}
+      {/* Main tab navigator — Home is the initial tab inside */}
       <Drawer.Screen name="MainTabs" component={TabNavigator} />
-
-      {/* Home + Notes + Profile + Settings live in this stack so back navigation works */}
-      <Drawer.Screen name="HomeNav" component={HomeStack} />
     </Drawer.Navigator>
   );
 }

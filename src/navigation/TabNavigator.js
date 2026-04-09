@@ -12,6 +12,7 @@ import StashScreen    from '../screens/StashScreen';
 import ProjectsStack  from './ProjectsStack';
 import ColorStack     from './ColorStack';
 import DiscoverScreen from '../screens/DiscoverScreen';
+import HomeStack      from './HomeStack';
 import COLORS from '../styles/colors';
 
 const Tab = createBottomTabNavigator();
@@ -35,6 +36,7 @@ function HamburgerButton({ navigation }) {
 export default function TabNavigator() {
   return (
     <Tab.Navigator
+      initialRouteName="Home"
       screenOptions={({ navigation }) => ({
         tabBarStyle: {
           backgroundColor: COLORS.MIDNIGHT,
@@ -52,6 +54,16 @@ export default function TabNavigator() {
         headerRight: () => <HamburgerButton navigation={navigation} />,
       })}
     >
+      {/* Home — hidden from tab bar; accessible via drawer and as initial route */}
+      <Tab.Screen
+        name="Home"
+        component={HomeStack}
+        options={{
+          headerShown: false,
+          tabBarItemStyle: { display: 'none' },
+          tabBarButton: () => null,
+        }}
+      />
       <Tab.Screen
         name="Stash"
         component={StashScreen}
