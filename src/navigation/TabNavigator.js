@@ -58,12 +58,14 @@ export default function TabNavigator() {
         headerLeft: () => <HamburgerButton navigation={navigation} />,
       })}
     >
+      {/* Home lives here so bottom tab bar shows on Home/Notes/Profile/Settings,
+          but the tab button is hidden — accessed via hamburger drawer */}
       <Tab.Screen
         name="Home"
         component={HomeStack}
         options={{
           headerShown: false,
-          tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" focused={focused} />,
+          tabBarButton: () => null,
         }}
       />
 

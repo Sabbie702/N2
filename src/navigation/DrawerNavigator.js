@@ -4,7 +4,7 @@
 
 import React from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, SafeAreaView,
+  View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Image,
 } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,9 +29,11 @@ function CustomDrawerContent(props) {
     <SafeAreaView style={drawer.container}>
       {/* Brand header */}
       <View style={drawer.header}>
-        <View style={drawer.logoMark}>
-          <Text style={drawer.logoText}>N2</Text>
-        </View>
+        <Image
+          source={require('../../assets/logo.png')}
+          style={drawer.logoImg}
+          resizeMode="contain"
+        />
         <View>
           <Text style={drawer.appName}>Nimble Needle</Text>
           <Text style={drawer.tagline}>From Stash to Stitch.</Text>
@@ -104,12 +106,7 @@ const drawer = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 20, paddingTop: 16, paddingBottom: 16,
   },
-  logoMark: {
-    width: 40, height: 40, borderRadius: 10,
-    backgroundColor: COLORS.DEEP_PLUM,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  logoText: { color: '#fff', fontSize: 13, fontWeight: '800' },
+  logoImg: { width: 44, height: 44, borderRadius: 10 },
   appName:  { fontSize: 15, fontWeight: '700', color: COLORS.LAVENDER_WHITE },
   tagline:  { fontSize: 11, color: COLORS.SOFT_LAVENDER, marginTop: 1 },
   divider:  { height: 1, backgroundColor: 'rgba(255,255,255,0.08)', marginHorizontal: 16, marginBottom: 8 },

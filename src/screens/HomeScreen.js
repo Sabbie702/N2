@@ -5,11 +5,9 @@
 
 import React from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, SafeAreaView,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet,
 } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
-import { DrawerActions } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import COLORS from '../styles/colors';
 
@@ -107,24 +105,8 @@ function DonutChart({ stats, size = 220 }) {
 
 // ─── Component ─────────────────────────────────────────────────────────────
 export default function HomeScreen({ navigation }) {
-  const openDrawer = () => navigation.dispatch(DrawerActions.openDrawer());
-
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={openDrawer} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Ionicons name="menu" size={26} color={COLORS.DEEP_PLUM} />
-        </TouchableOpacity>
-        <View style={styles.headerCenter}>
-          <Text style={styles.appName}>Nimble Needle</Text>
-          <Text style={styles.tagline}>From Stash to Stitch.</Text>
-        </View>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>S</Text>
-        </View>
-      </View>
-
+    <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
 
         {/* Welcome */}
@@ -208,30 +190,13 @@ export default function HomeScreen({ navigation }) {
         </View>
 
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f7f7f9' },
   scroll: { paddingBottom: 32 },
-
-  // Header
-  header: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 18, paddingVertical: 14,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.06)',
-  },
-  headerCenter: { flex: 1, marginLeft: 12 },
-  appName: { fontSize: 17, fontWeight: '800', color: COLORS.DEEP_PLUM },
-  tagline: { fontSize: 11, color: COLORS.SOFT_LAVENDER, marginTop: 1 },
-  avatar: {
-    width: 38, height: 38, borderRadius: 19,
-    backgroundColor: COLORS.DEEP_PLUM,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  avatarText: { color: '#fff', fontSize: 15, fontWeight: '700' },
 
   // Welcome
   welcome: {

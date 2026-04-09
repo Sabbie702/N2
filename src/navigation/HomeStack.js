@@ -16,30 +16,40 @@ import COLORS from '../styles/colors';
 
 const Stack = createNativeStackNavigator();
 
+const sharedHeader = {
+  headerStyle:      { backgroundColor: COLORS.DEEP_PLUM },
+  headerTintColor:  COLORS.LAVENDER_WHITE,
+  headerTitleStyle: { fontWeight: 'bold' },
+};
+
 export default function HomeStack({ navigation }) {
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        headerStyle:      { backgroundColor: COLORS.DEEP_PLUM },
-        headerTintColor:  COLORS.LAVENDER_WHITE,
-        headerTitleStyle: { fontWeight: 'bold' },
-      }}
+  const HamburgerRight = () => (
+    <TouchableOpacity
+      onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      style={{ marginRight: 4 }}
     >
-      {/* Home — uses its own custom header, native header hidden */}
+      <Ionicons name="menu" size={24} color={COLORS.LAVENDER_WHITE} />
+    </TouchableOpacity>
+  );
+
+  return (
+    <Stack.Navigator screenOptions={sharedHeader}>
+      {/* Home — Deep Plum native header: "Home" left, hamburger right */}
       <Stack.Screen
         name="HomeMain"
         component={HomeScreen}
-        options={{ headerShown: false }}
+        options={{ title: 'Home', headerRight: () => <HamburgerRight /> }}
       />
 
-      {/* Notes — uses its own custom header (search toggle); native header hidden */}
+      {/* Notes — keeps its own search-toggle custom header; native header hidden */}
       <Stack.Screen
         name="Notes"
         component={NotesScreen}
         options={{ headerShown: false }}
       />
 
-      {/* Profile & Settings — use the standard Deep Plum native header (back arrow auto-added) */}
+      {/* Profile & Settings — standard Deep Plum header with auto back arrow */}
       <Stack.Screen
         name="Profile"
         component={ProfileScreen}
