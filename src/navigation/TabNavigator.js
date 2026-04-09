@@ -1,6 +1,6 @@
 // TabNavigator.js
 // 4-tab bottom navigator: Stash, Projects, Colors, Discover.
-// Home and Notes live in the drawer (hamburger).
+// Home, Notes, Profile, Settings live in the drawer (hamburger right side).
 
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -8,7 +8,6 @@ import { Text, TouchableOpacity } from 'react-native';
 import { DrawerActions } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
-import HomeStack     from './HomeStack';
 import StashScreen    from '../screens/StashScreen';
 import ProjectsStack  from './ProjectsStack';
 import ColorStack     from './ColorStack';
@@ -18,19 +17,14 @@ import COLORS from '../styles/colors';
 const Tab = createBottomTabNavigator();
 
 function TabIcon({ emoji, focused }) {
-  return (
-    <Text style={{ fontSize: 22, opacity: focused ? 1 : 0.6 }}>
-      {emoji}
-    </Text>
-  );
+  return <Text style={{ fontSize: 22, opacity: focused ? 1 : 0.6 }}>{emoji}</Text>;
 }
 
-// Hamburger button for tab screen headers
 function HamburgerButton({ navigation }) {
   return (
     <TouchableOpacity
       onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-      style={{ marginLeft: 14 }}
+      style={{ marginRight: 14 }}
       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
     >
       <Ionicons name="menu" size={24} color={COLORS.LAVENDER_WHITE} />
@@ -58,18 +52,6 @@ export default function TabNavigator() {
         headerRight: () => <HamburgerButton navigation={navigation} />,
       })}
     >
-      {/* Home lives here so bottom tab bar shows on Home/Notes/Profile/Settings,
-          but the tab slot is zeroed out — accessed via hamburger drawer only */}
-      <Tab.Screen
-        name="Home"
-        component={HomeStack}
-        options={{
-          headerShown: false,
-          tabBarButton: () => null,
-          tabBarItemStyle: { width: 0, overflow: 'hidden' },
-        }}
-      />
-
       <Tab.Screen
         name="Stash"
         component={StashScreen}
@@ -78,7 +60,6 @@ export default function TabNavigator() {
           tabBarIcon: ({ focused }) => <TabIcon emoji="🧵" focused={focused} />,
         }}
       />
-
       <Tab.Screen
         name="Projects"
         component={ProjectsStack}
@@ -87,7 +68,6 @@ export default function TabNavigator() {
           tabBarIcon: ({ focused }) => <TabIcon emoji="📋" focused={focused} />,
         }}
       />
-
       <Tab.Screen
         name="Colors"
         component={ColorStack}
@@ -97,7 +77,6 @@ export default function TabNavigator() {
           tabBarIcon: ({ focused }) => <TabIcon emoji="🎨" focused={focused} />,
         }}
       />
-
       <Tab.Screen
         name="Discover"
         component={DiscoverScreen}

@@ -1,6 +1,7 @@
 // src/navigation/DrawerNavigator.js
-// Hamburger drawer: wraps the main tab navigator.
-// Drawer items: Home, Notes, Profile, Settings.
+// Right-side hamburger drawer. Drawer items navigate to HomeStack (Home/Notes/Profile/Settings)
+// or to the main tab navigator. HomeStack lives here as a drawer screen so the 4 bottom
+// tabs remain clean and evenly spaced.
 
 import React from 'react';
 import {
@@ -10,15 +11,16 @@ import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigatio
 import { Ionicons } from '@expo/vector-icons';
 
 import TabNavigator from './TabNavigator';
+import HomeStack    from './HomeStack';
 import COLORS from '../styles/colors';
 
 const Drawer = createDrawerNavigator();
 
 const DRAWER_ITEMS = [
-  { name: 'Home',     label: 'Home',     icon: 'home-outline' },
-  { name: 'Notes',    label: 'Notes',    icon: 'document-text-outline' },
-  { name: 'Profile',  label: 'Profile',  icon: 'person-outline' },
-  { name: 'Settings', label: 'Settings', icon: 'settings-outline' },
+  { name: 'Home',     label: 'Home',     icon: 'home-outline',          screen: 'HomeMain' },
+  { name: 'Notes',    label: 'Notes',    icon: 'document-text-outline', screen: 'Notes' },
+  { name: 'Profile',  label: 'Profile',  icon: 'person-outline',        screen: 'Profile' },
+  { name: 'Settings', label: 'Settings', icon: 'settings-outline',      screen: 'Settings' },
 ];
 
 function CustomDrawerContent(props) {
@@ -29,11 +31,7 @@ function CustomDrawerContent(props) {
     <SafeAreaView style={drawer.container}>
       {/* Brand header */}
       <View style={drawer.header}>
-        <Image
-          source={require('../../assets/logo.png')}
-          style={drawer.logoImg}
-          resizeMode="contain"
-        />
+        <Image source={require('../../assets/logo.png')} style={drawer.logoImg} resizeMode="contain" />
         <View>
           <Text style={drawer.appName}>Nimble Needle</Text>
           <Text style={drawer.tagline}>From Stash to Stitch.</Text>
@@ -44,20 +42,17 @@ function CustomDrawerContent(props) {
 
       <DrawerContentScrollView {...props} scrollEnabled={false}>
         {DRAWER_ITEMS.map((item) => {
-          const isActive = activeRoute === 'MainTabs' && item.name === 'Home';
-          const handleNav = () => {
-            if (item.name === 'Home') {
-              navigation.navigate('MainTabs', { screen: 'Home', params: { screen: 'HomeMain' } });
-            } else {
-              navigation.navigate('MainTabs', { screen: 'Home', params: { screen: item.name } });
-            }
-            navigation.closeDrawer();
-          };
+          const isActive = activeRoute === 'HomeNav' &&
+            (item.name === 'Home' || item.name === activeRoute);
           return (
             <TouchableOpacity
               key={item.name}
               style={[drawer.item, isActive && drawer.itemActive]}
-              onPress={handleNav}
+              onPress={() => {
+                // Navigate to HomeNav stack, pushing the right screen
+                navigation.navigate('HomeNav', { screen: item.screen });
+                navigation.closeDrawer();
+              }}
               activeOpacity={0.8}
             >
               <Ionicons
@@ -75,7 +70,7 @@ function CustomDrawerContent(props) {
 
       {/* Footer */}
       <View style={drawer.footer}>
-        <Text style={drawer.footerText}>N2 Nimble Needle · V1</Text>
+        <Text style={drawer.footerText}>N2 Nimble Needle · V1.1</Text>
       </View>
     </SafeAreaView>
   );
@@ -95,8 +90,11 @@ export default function DrawerNavigator() {
         },
       }}
     >
-      {/* All screens live inside the tab navigator — drawer is navigation-only */}
+      {/* Main 4-tab navigator */}
       <Drawer.Screen name="MainTabs" component={TabNavigator} />
+
+      {/* Home + Notes + Profile + Settings live in this stack so back navigation works */}
+      <Drawer.Screen name="HomeNav" component={HomeStack} />
     </Drawer.Navigator>
   );
 }
@@ -116,9 +114,9 @@ const drawer = StyleSheet.create({
     paddingVertical: 13, paddingHorizontal: 20,
     borderRadius: 10, marginHorizontal: 8, marginVertical: 2,
   },
-  itemActive: { backgroundColor: 'rgba(78,201,160,0.12)' },
-  itemLabel:  { fontSize: 15, color: COLORS.SOFT_LAVENDER },
+  itemActive:      { backgroundColor: 'rgba(78,201,160,0.12)' },
+  itemLabel:       { fontSize: 15, color: COLORS.SOFT_LAVENDER },
   itemLabelActive: { color: COLORS.MINT, fontWeight: '600' },
-  footer: { padding: 20, paddingBottom: 10 },
+  footer:     { padding: 20, paddingBottom: 10 },
   footerText: { fontSize: 11, color: 'rgba(255,255,255,0.25)' },
 });

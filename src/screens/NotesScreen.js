@@ -5,9 +5,10 @@
 import React, { useState, useCallback, useRef } from 'react';
 import {
   View, Text, FlatList, StyleSheet, TouchableOpacity,
-  TextInput, Animated, SafeAreaView,
+  TextInput, Animated, Platform, StatusBar,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NoteCard } from '../components/NoteCard';
 import { NoteCreateSheet } from '../components/NoteCreateSheet';
@@ -36,6 +37,7 @@ function EmptyNotes({ searching }) {
 }
 
 export default function NotesScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
   const [notes, setNotes]           = useState([]);
   const [query, setQuery]           = useState('');
   const [searching, setSearching]   = useState(false);
@@ -91,7 +93,7 @@ export default function NotesScreen({ navigation }) {
   const endSearch   = () => { setSearching(false); setQuery(''); };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* ── Custom header ── */}
       <View style={styles.header}>
         {searching ? (
@@ -166,7 +168,7 @@ export default function NotesScreen({ navigation }) {
         onClose={() => setShowCreate(false)}
         onSave={handleSave}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 

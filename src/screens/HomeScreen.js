@@ -7,7 +7,7 @@ import React from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
 } from 'react-native';
-import Svg, { Path, Circle } from 'react-native-svg';
+import Svg, { Path, Circle, Defs, Pattern, Line, ClipPath, G } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import COLORS from '../styles/colors';
 
@@ -32,72 +32,81 @@ const CONTINUE_PROJECT = {
   progress: 0.80,
 };
 
-// ─── Donut chart ────────────────────────────────────────────────────────────
+// ─── Donut chart with quilted texture ────────────────────────────────────────
 function polarToXY(cx, cy, r, angleDeg) {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
-  return {
-    x: cx + r * Math.cos(rad),
-    y: cy + r * Math.sin(rad),
-  };
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
 }
 
-function arcPath(cx, cy, r, startDeg, endDeg) {
-  const start = polarToXY(cx, cy, r, startDeg);
-  const end   = polarToXY(cx, cy, r, endDeg);
+// Filled annular sector path (outer arc → inner arc back)
+function sectorPath(cx, cy, rOuter, rInner, startDeg, endDeg) {
+  const s1 = polarToXY(cx, cy, rOuter, startDeg);
+  const e1 = polarToXY(cx, cy, rOuter, endDeg);
+  const s2 = polarToXY(cx, cy, rInner, endDeg);
+  const e2 = polarToXY(cx, cy, rInner, startDeg);
   const large = endDeg - startDeg > 180 ? 1 : 0;
-  return `M ${start.x} ${start.y} A ${r} ${r} 0 ${large} 1 ${end.x} ${end.y}`;
+  return [
+    `M ${s1.x} ${s1.y}`,
+    `A ${rOuter} ${rOuter} 0 ${large} 1 ${e1.x} ${e1.y}`,
+    `L ${s2.x} ${s2.y}`,
+    `A ${rInner} ${rInner} 0 ${large} 0 ${e2.x} ${e2.y}`,
+    'Z',
+  ].join(' ');
 }
 
 function DonutChart({ stats, size = 220 }) {
   const cx = size / 2, cy = size / 2;
   const R_outer = size * 0.44;
   const R_inner = size * 0.24;
-  const strokeW = R_outer - R_inner;
   const R_mid   = (R_outer + R_inner) / 2;
-  const GAP = 3; // degrees gap between segments
+  const GAP = 3;
 
   const total = stats.quiltsActive + stats.quiltsDone + stats.bagsActive + stats.bagsDone;
   const toDeg = (v) => (v / total) * (360 - GAP * 4);
 
   const segments = [
-    { value: stats.quiltsActive, color: COLORS.DEEP_PLUM,  label: `${stats.quiltsActive}`, sublabel: 'Active' },
-    { value: stats.bagsActive,   color: COLORS.MINT,       label: `${stats.bagsActive}`,   sublabel: 'Active' },
-    { value: stats.bagsDone,     color: '#4aad85',         label: `${stats.bagsDone}`,     sublabel: 'Done' },
-    { value: stats.quiltsDone,   color: '#7C3ABF',         label: `${stats.quiltsDone}`,   sublabel: 'Done' },
+    { value: stats.quiltsActive, color: COLORS.DEEP_PLUM },
+    { value: stats.bagsActive,   color: COLORS.MINT },
+    { value: stats.bagsDone,     color: '#4aad85' },
+    { value: stats.quiltsDone,   color: '#7C3ABF' },
   ];
 
-  // Calculate start angles
   let angle = 0;
-  const rendered = segments.map((seg, i) => {
+  const rendered = segments.map((seg) => {
     const sweep = toDeg(seg.value);
     const start = angle;
     const end   = angle + sweep;
-    const mid   = start + sweep / 2;
-    const labelPos = polarToXY(cx, cy, R_mid, mid);
     angle = end + GAP;
-    return { ...seg, start, end, labelPos };
+    return { ...seg, start, end };
   });
 
   return (
     <Svg width={size} height={size}>
-      {/* White background circle */}
+      <Defs>
+        {/* Diamond quilt stitch pattern */}
+        <Pattern id="quiltStitch" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+          <Path d="M6 0 L12 6 L6 12 L0 6 Z" fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth="0.8" />
+        </Pattern>
+      </Defs>
+
+      {/* Shadow circle */}
       <Circle cx={cx} cy={cy} r={R_outer + 4} fill="#fff"
         style={{ shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 }}
       />
 
-      {/* Segments */}
+      {/* Filled sector segments */}
       {rendered.map((seg, i) => (
-        <Path
-          key={i}
-          d={arcPath(cx, cy, R_mid, seg.start, seg.end)}
-          stroke={seg.color}
-          strokeWidth={strokeW}
-          strokeLinecap="butt"
-          fill="none"
-        />
+        <G key={i}>
+          {/* Solid color fill */}
+          <Path d={sectorPath(cx, cy, R_outer, R_inner, seg.start, seg.end)} fill={seg.color} />
+          {/* Quilted diamond stitch overlay */}
+          <Path d={sectorPath(cx, cy, R_outer, R_inner, seg.start, seg.end)} fill="url(#quiltStitch)" />
+          {/* Subtle inner highlight edge */}
+          <Path d={sectorPath(cx, cy, R_outer, R_outer - 3, seg.start, seg.end)} fill="rgba(255,255,255,0.12)" />
+        </G>
       ))}
 
-      {/* Inner white circle */}
+      {/* Inner white circle for donut hole */}
       <Circle cx={cx} cy={cy} r={R_inner - 2} fill="#fff" />
     </Svg>
   );
