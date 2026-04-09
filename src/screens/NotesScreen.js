@@ -111,11 +111,9 @@ export default function NotesScreen({ navigation }) {
         ) : (
           <>
             <View style={styles.headerLeft}>
-              {navigation?.canGoBack() && (
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBtn}>
-                  <Ionicons name="arrow-back" size={20} color={COLORS.LAVENDER_WHITE} />
-                </TouchableOpacity>
-              )}
+              <TouchableOpacity onPress={() => navigation?.goBack()} style={styles.headerBtn}>
+                <Ionicons name="arrow-back" size={20} color={COLORS.LAVENDER_WHITE} />
+              </TouchableOpacity>
               <Text style={styles.headerTitle}>Notes</Text>
             </View>
             <TouchableOpacity onPress={startSearch} style={styles.headerBtn}>

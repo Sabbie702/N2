@@ -55,17 +55,18 @@ export default function TabNavigator() {
         headerStyle:      { backgroundColor: COLORS.DEEP_PLUM },
         headerTintColor:  COLORS.LAVENDER_WHITE,
         headerTitleStyle: { fontWeight: 'bold' },
-        headerLeft: () => <HamburgerButton navigation={navigation} />,
+        headerRight: () => <HamburgerButton navigation={navigation} />,
       })}
     >
       {/* Home lives here so bottom tab bar shows on Home/Notes/Profile/Settings,
-          but the tab button is hidden — accessed via hamburger drawer */}
+          but the tab slot is zeroed out — accessed via hamburger drawer only */}
       <Tab.Screen
         name="Home"
         component={HomeStack}
         options={{
           headerShown: false,
           tabBarButton: () => null,
+          tabBarItemStyle: { width: 0, overflow: 'hidden' },
         }}
       />
 

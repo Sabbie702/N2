@@ -4,7 +4,7 @@
 //   ProjectsList → ProjectWorkspace → ColorWheel (resume editing)
 
 import React from 'react';
-import { TouchableOpacity, Text } from 'react-native';
+import { TouchableOpacity, Text, View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { DrawerActions } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -33,24 +33,23 @@ export default function ProjectsStack() {
         component={ProjectsScreen}
         options={({ navigation }) => ({
           title: 'Projects',
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              style={{ marginRight: 4 }}
-            >
-              <Ionicons name="menu" size={24} color={COLORS.LAVENDER_WHITE} />
-            </TouchableOpacity>
-          ),
           headerRight: () => (
-            <TouchableOpacity
-              onPress={() => navigation.navigate('NewProject')}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Text style={{ fontSize: 28, color: COLORS.LAVENDER_WHITE, lineHeight: 32, fontWeight: '300' }}>
-                +
-              </Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('NewProject')}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Text style={{ fontSize: 28, color: COLORS.LAVENDER_WHITE, lineHeight: 32, fontWeight: '300' }}>
+                  +
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons name="menu" size={24} color={COLORS.LAVENDER_WHITE} />
+              </TouchableOpacity>
+            </View>
           ),
         })}
       />

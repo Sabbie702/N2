@@ -27,11 +27,10 @@ export default function ColorStack() {
         component={ColorWheelScreen}
         options={({ navigation }) => ({
           title: 'Color Wheel',
-          headerLeft: () => (
+          headerRight: () => (
             <TouchableOpacity
               onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              style={{ marginRight: 8 }}
             >
               <Ionicons name="menu" size={24} color={COLORS.LAVENDER_WHITE} />
             </TouchableOpacity>

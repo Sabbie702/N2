@@ -88,6 +88,7 @@ export default function DrawerNavigator() {
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
         headerShown: false,
+        drawerPosition: 'right',
         drawerStyle: {
           backgroundColor: COLORS.MIDNIGHT,
           width: 270,

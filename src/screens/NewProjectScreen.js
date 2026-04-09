@@ -64,6 +64,7 @@ const BAG_STYLES = [
 ];
 
 const DEFAULT_TODOS = ['Label', 'Photograph', 'Share'];
+// DEFAULT_TODOS are saved silently on project creation — editable in the project workspace
 
 // ─── Dropdown picker ──────────────────────────────────────────────────────────
 
@@ -132,58 +133,6 @@ function Field({ label, value, onChangeText, placeholder, multiline = false }) {
   );
 }
 
-// ─── To-Do checklist ─────────────────────────────────────────────────────────
-
-function TodoList({ todos, onToggle, onAdd, onRemoveCustom }) {
-  const [newItem, setNewItem] = useState('');
-
-  const handleAdd = () => {
-    if (!newItem.trim()) return;
-    onAdd(newItem.trim());
-    setNewItem('');
-  };
-
-  return (
-    <View style={styles.fieldWrapper}>
-      <Text style={styles.fieldLabel}>To Do</Text>
-      <View style={styles.todoCard}>
-        {todos.map((item, i) => (
-          <View key={i} style={styles.todoRow}>
-            <TouchableOpacity onPress={() => onToggle(i)} style={styles.todoCheck}>
-              <Ionicons
-                name={item.done ? 'checkbox' : 'square-outline'}
-                size={20}
-                color={item.done ? COLORS.MINT : COLORS.SOFT_LAVENDER}
-              />
-            </TouchableOpacity>
-            <Text style={[styles.todoLabel, item.done && styles.todoLabelDone]}>{item.label}</Text>
-            {!DEFAULT_TODOS.includes(item.label) && (
-              <TouchableOpacity onPress={() => onRemoveCustom(i)} style={{ padding: 4 }}>
-                <Ionicons name="close" size={14} color="#aaa" />
-              </TouchableOpacity>
-            )}
-          </View>
-        ))}
-        {/* Add custom item */}
-        <View style={styles.todoAddRow}>
-          <TextInput
-            style={styles.todoInput}
-            value={newItem}
-            onChangeText={setNewItem}
-            placeholder="Add custom item…"
-            placeholderTextColor={COLORS.SOFT_LAVENDER}
-            onSubmitEditing={handleAdd}
-            returnKeyType="done"
-          />
-          <TouchableOpacity onPress={handleAdd} style={styles.todoAddBtn}>
-            <Ionicons name="add" size={18} color={COLORS.DEEP_PLUM} />
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
-  );
-}
-
 // ─── Main screen ─────────────────────────────────────────────────────────────
 
 export default function NewProjectScreen({ navigation }) {
@@ -215,21 +164,9 @@ export default function NewProjectScreen({ navigation }) {
   const [dimensions, setDimensions]         = useState('');
   const [supplyList, setSupplyList]         = useState('');
 
-  // Todos
-  const [todos, setTodos] = useState(
-    DEFAULT_TODOS.map(label => ({ label, done: false }))
-  );
-
   const handleTypeSelect = (type) => {
     setProjectType(type);
-    setTodos(DEFAULT_TODOS.map(label => ({ label, done: false })));
   };
-
-  const toggleTodo = (i) => {
-    setTodos(prev => prev.map((t, idx) => idx === i ? { ...t, done: !t.done } : t));
-  };
-  const addTodo = (label) => setTodos(prev => [...prev, { label, done: false }]);
-  const removeCustomTodo = (i) => setTodos(prev => prev.filter((_, idx) => idx !== i));
 
   const handleSave = async () => {
     if (!projectType) {
@@ -261,7 +198,7 @@ export default function NewProjectScreen({ navigation }) {
       dateCompleted: dateCompleted.trim(),
       notes: notes.trim(),
       tags: tags.trim(),
-      todos,
+      todos: DEFAULT_TODOS.map(label => ({ label, done: false })),
       ...(projectType === 'Quilt'
         ? {
             patternName:      patternName.trim(),
@@ -377,25 +314,6 @@ export default function NewProjectScreen({ navigation }) {
             <Field label="Notes" value={notes} onChangeText={setNotes}
               placeholder="Inspiration, reminders, fabric sources…" multiline />
 
-            {/* ── To-Do ── */}
-            <TodoList
-              todos={todos}
-              onToggle={toggleTodo}
-              onAdd={addTodo}
-              onRemoveCustom={removeCustomTodo}
-            />
-
-            {/* ── Stage preview ── */}
-            <View style={styles.stagesCard}>
-              <Text style={styles.stagesTitle}>Default Stages</Text>
-              {(projectType === 'Quilt' ? QUILT_STAGES : BAG_STAGES).map((stage, i) => (
-                <View key={stage} style={styles.stageRow}>
-                  <View style={styles.stageDot} />
-                  <Text style={styles.stageText}>{i + 1}. {stage}</Text>
-                </View>
-              ))}
-            </View>
-
             <TouchableOpacity style={styles.saveButton} onPress={handleSave} activeOpacity={0.85}>
               <Text style={styles.saveButtonText}>Save Project</Text>
             </TouchableOpacity>
@@ -469,33 +387,6 @@ const styles = StyleSheet.create({
   pickerOptionActive: { },
   pickerOptionText:       { fontSize: 15, color: COLORS.MIDNIGHT },
   pickerOptionTextActive: { fontWeight: '700', color: COLORS.DEEP_PLUM },
-
-  // To-Do
-  todoCard: {
-    backgroundColor: '#fff', borderRadius: 12,
-    borderWidth: 1.5, borderColor: COLORS.SOFT_LAVENDER,
-    overflow: 'hidden',
-  },
-  todoRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    paddingVertical: 10, paddingHorizontal: 14,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)',
-  },
-  todoCheck:     { padding: 2 },
-  todoLabel:     { flex: 1, fontSize: 14, color: COLORS.MIDNIGHT },
-  todoLabelDone: { textDecorationLine: 'line-through', color: '#9ca3af' },
-  todoAddRow: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 14, paddingVertical: 8,
-  },
-  todoInput: {
-    flex: 1, fontSize: 14, color: COLORS.MIDNIGHT,
-    paddingVertical: 4,
-  },
-  todoAddBtn: {
-    padding: 4, backgroundColor: 'rgba(91,45,142,0.1)',
-    borderRadius: 6,
-  },
 
   // Stages
   stagesCard: {
