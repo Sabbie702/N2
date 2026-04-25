@@ -72,15 +72,11 @@ export default function ProjectsStack() {
         options={{ title: 'Edit Project' }}
       />
 
-      {/* ColorWheel pushed from ProjectWorkspace — uses navigation header */}
+      {/* ColorWheel — owns its own WizardHeader; native header hidden */}
       <Stack.Screen
         name="ColorWheel"
         component={ColorWheelScreen}
-        options={({ route }) => ({
-          title: route.params?.resumePalette
-            ? 'Edit Palette'
-            : 'Color Wheel',
-        })}
+        options={{ headerShown: false }}
       />
 
     </Stack.Navigator>
