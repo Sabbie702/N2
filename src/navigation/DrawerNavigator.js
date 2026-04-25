@@ -1,79 +1,120 @@
 // src/navigation/DrawerNavigator.js
-// Right-side hamburger drawer. Drawer items navigate to HomeStack (Home/Notes/Profile/Settings)
-// or to the main tab navigator. HomeStack lives here as a drawer screen so the 4 bottom
-// tabs remain clean and evenly spaced.
+// Right-side drawer — light lavender theme, two-section menu.
 
 import React from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Image,
+  View, Text, TouchableOpacity, StyleSheet,
+  SafeAreaView, ScrollView,
 } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
+import Svg, { Path } from 'react-native-svg';
 
 import TabNavigator from './TabNavigator';
+import { AppLogo } from '../screens/HomeScreen';
 import COLORS from '../styles/colors';
 
 const Drawer = createDrawerNavigator();
 
-const DRAWER_ITEMS = [
-  { name: 'Home',     label: 'Home',     icon: 'home-outline',          screen: 'HomeMain' },
-  { name: 'Notes',    label: 'Notes',    icon: 'document-text-outline', screen: 'Notes' },
-  { name: 'Profile',  label: 'Profile',  icon: 'person-outline',        screen: 'Profile' },
-  { name: 'Settings', label: 'Settings', icon: 'settings-outline',      screen: 'Settings' },
-];
+// ─── Menu row ─────────────────────────────────────────────────────────────────
+function MenuRow({ icon, label, variant = 'default', onPress }) {
+  const isDanger = variant === 'danger';
+  return (
+    <TouchableOpacity
+      style={dr.menuRow}
+      onPress={onPress}
+      activeOpacity={0.85}
+    >
+      <View style={dr.menuLeft}>
+        <View style={[dr.menuIcon, isDanger && dr.menuIconDanger]}>
+          <Ionicons
+            name={icon}
+            size={22}
+            color={isDanger ? '#ef4444' : COLORS.DEEP_PLUM}
+          />
+        </View>
+        <Text style={[dr.menuLabel, isDanger && dr.menuLabelDanger]}>{label}</Text>
+      </View>
+      <Ionicons
+        name="chevron-forward"
+        size={18}
+        color={isDanger ? '#ef4444' : 'rgba(45,27,78,0.4)'}
+      />
+    </TouchableOpacity>
+  );
+}
 
-function CustomDrawerContent(props) {
-  const { navigation, state } = props;
-  const activeRoute = state.routeNames[state.index];
+// ─── Drawer content ───────────────────────────────────────────────────────────
+function CustomDrawerContent({ navigation }) {
+  const go = (screen) => {
+    navigation.navigate('MainTabs', { screen: 'Home', params: { screen } });
+    navigation.closeDrawer();
+  };
+  const close = () => navigation.closeDrawer();
 
   return (
-    <SafeAreaView style={drawer.container}>
-      {/* Brand header */}
-      <View style={drawer.header}>
-        <Image source={require('../../assets/logo.png')} style={drawer.logoImg} resizeMode="contain" />
-        <View>
-          <Text style={drawer.appName}>Nimble Needle</Text>
-          <Text style={drawer.tagline}>From Stash to Stitch.</Text>
-        </View>
+    <SafeAreaView style={dr.container}>
+      {/* Decorative dashed curves in header region */}
+      <View style={dr.headerDecor} pointerEvents="none">
+        <Svg width="100%" height="180">
+          <Path
+            d="M-20 52 C62 10 92 118 170 60 C245 4 270 122 350 50"
+            fill="none" stroke="#C084FC" strokeWidth="2"
+            strokeDasharray="8 8" opacity="0.5"
+          />
+          <Path
+            d="M-10 145 C72 100 120 174 205 112 C270 68 302 154 350 118"
+            fill="none" stroke="#C084FC" strokeWidth="2"
+            strokeDasharray="8 8" opacity="0.5"
+          />
+        </Svg>
       </View>
 
-      <View style={drawer.divider} />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 40 }}
+      >
+        {/* Brand header */}
+        <View style={dr.header}>
+          <View style={dr.brand}>
+            <AppLogo size={56} />
+            <Text style={dr.brandName}>Nimble{'\n'}Needle</Text>
+          </View>
+          <View style={dr.welcomeRow}>
+            <Text style={dr.welcomeText}>Welcome, Sabbie!</Text>
+            <Text style={{ fontSize: 22 }}>💚</Text>
+          </View>
+        </View>
 
-      <DrawerContentScrollView {...props} scrollEnabled={false}>
-        {DRAWER_ITEMS.map((item) => {
-          const isActive = activeRoute === 'HomeNav' &&
-            (item.name === 'Home' || item.name === activeRoute);
-          return (
-            <TouchableOpacity
-              key={item.name}
-              style={[drawer.item, isActive && drawer.itemActive]}
-              onPress={() => {
-                navigation.navigate('MainTabs', { screen: 'Home', params: { screen: item.screen } });
-                navigation.closeDrawer();
-              }}
-              activeOpacity={0.8}
-            >
-              <Ionicons
-                name={item.icon}
-                size={20}
-                color={isActive ? COLORS.MINT : COLORS.SOFT_LAVENDER}
-              />
-              <Text style={[drawer.itemLabel, isActive && drawer.itemLabelActive]}>
-                {item.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </DrawerContentScrollView>
+        {/* ── MAIN MENU ── */}
+        <Text style={dr.sectionLabel}>MAIN MENU</Text>
+        <View style={dr.section}>
+          <MenuRow icon="person-outline"   label="Profile"              onPress={() => go('Profile')}  />
+          <MenuRow icon="settings-outline" label="App Settings"         onPress={() => go('Settings')} />
+          <MenuRow icon="archive-outline"  label="Storage Spots"        onPress={close} />
+          <MenuRow icon="book-outline"     label="App Help & Tutorials" onPress={close} />
+        </View>
 
-      {/* Footer */}
-      <View style={drawer.footer}>
-        <Text style={drawer.footerText}>N2 Nimble Needle · V1.1</Text>
+        <View style={dr.divider} />
+
+        {/* ── ACCOUNT & UTILITY ── */}
+        <Text style={dr.sectionLabel}>ACCOUNT & UTILITY</Text>
+        <View style={dr.section}>
+          <MenuRow icon="trophy-outline"           label="Subscription"      onPress={close} />
+          <MenuRow icon="headset-outline"          label="Contact Support"   onPress={close} />
+          <MenuRow icon="shield-checkmark-outline" label="Privacy & Terms"   onPress={close} />
+          <MenuRow icon="log-out-outline"          label="Log Out" variant="danger" onPress={close} />
+        </View>
+      </ScrollView>
+
+      <View style={dr.footer}>
+        <Text style={dr.footerText}>N2 Nimble Needle · V1.1</Text>
       </View>
     </SafeAreaView>
   );
 }
 
+// ─── Navigator ────────────────────────────────────────────────────────────────
 export default function DrawerNavigator() {
   return (
     <Drawer.Navigator
@@ -83,35 +124,73 @@ export default function DrawerNavigator() {
         headerShown: false,
         drawerPosition: 'right',
         drawerStyle: {
-          backgroundColor: COLORS.MIDNIGHT,
-          width: 270,
+          backgroundColor: COLORS.LAVENDER_WHITE,
+          width: 310,
         },
       }}
     >
-      {/* Main tab navigator — Home is the initial tab inside */}
       <Drawer.Screen name="MainTabs" component={TabNavigator} />
     </Drawer.Navigator>
   );
 }
 
-const drawer = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.MIDNIGHT },
+// ─── Styles ───────────────────────────────────────────────────────────────────
+const dr = StyleSheet.create({
+  container: { flex: 1, backgroundColor: COLORS.LAVENDER_WHITE },
+
+  headerDecor: {
+    position: 'absolute', top: 0, left: 0, right: 0, height: 180,
+  },
+
   header: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 20, paddingTop: 16, paddingBottom: 16,
+    paddingHorizontal: 22,
+    paddingTop: 62,   // clears decorative curves
+    paddingBottom: 20,
   },
-  logoImg: { width: 44, height: 44, borderRadius: 10 },
-  appName:  { fontSize: 15, fontWeight: '700', color: COLORS.LAVENDER_WHITE },
-  tagline:  { fontSize: 11, color: COLORS.SOFT_LAVENDER, marginTop: 1 },
-  divider:  { height: 1, backgroundColor: 'rgba(255,255,255,0.08)', marginHorizontal: 16, marginBottom: 8 },
-  item: {
-    flexDirection: 'row', alignItems: 'center', gap: 14,
-    paddingVertical: 13, paddingHorizontal: 20,
-    borderRadius: 10, marginHorizontal: 8, marginVertical: 2,
+  brand: {
+    flexDirection: 'row', alignItems: 'center',
+    gap: 14, marginBottom: 16,
   },
-  itemActive:      { backgroundColor: 'rgba(78,201,160,0.12)' },
-  itemLabel:       { fontSize: 15, color: COLORS.SOFT_LAVENDER },
-  itemLabelActive: { color: COLORS.MINT, fontWeight: '600' },
-  footer:     { padding: 20, paddingBottom: 10 },
-  footerText: { fontSize: 11, color: 'rgba(255,255,255,0.25)' },
+  brandName: {
+    fontSize: 26, fontWeight: '900',
+    color: COLORS.MIDNIGHT, letterSpacing: -0.8, lineHeight: 30,
+  },
+  welcomeRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  welcomeText: { fontSize: 16, fontWeight: '600', color: 'rgba(45,27,78,0.8)' },
+
+  sectionLabel: {
+    fontSize: 11, fontWeight: '800',
+    color: 'rgba(91,45,142,0.65)',
+    letterSpacing: 1.5,
+    paddingHorizontal: 22, marginBottom: 10, marginTop: 4,
+  },
+  section: { paddingHorizontal: 12, gap: 10, marginBottom: 6 },
+
+  menuRow: {
+    flexDirection: 'row', alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    borderRadius: 22, paddingHorizontal: 14, paddingVertical: 13,
+    shadowColor: COLORS.MIDNIGHT,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.07, shadowRadius: 20, elevation: 2,
+  },
+  menuLeft:       { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  menuIcon:       {
+    width: 44, height: 44, borderRadius: 22,
+    backgroundColor: COLORS.LAVENDER_WHITE,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  menuIconDanger: { backgroundColor: '#fef2f2' },
+  menuLabel:      { fontSize: 15, fontWeight: '600', color: COLORS.MIDNIGHT },
+  menuLabelDanger:{ color: '#ef4444' },
+
+  divider: {
+    height: 1,
+    backgroundColor: 'rgba(192,132,252,0.3)',
+    marginHorizontal: 22, marginVertical: 14,
+  },
+
+  footer:     { padding: 20, paddingBottom: 12, alignItems: 'center' },
+  footerText: { fontSize: 11, color: 'rgba(45,27,78,0.3)' },
 });

@@ -1,35 +1,35 @@
 // TabNavigator.js
-// 4-tab bottom navigator: Stash, Projects, Colors, Discover.
-// Home, Notes, Profile, Settings live in the drawer (hamburger right side).
+// 4-tab bottom navigator: Projects, Stash, Discover (+ hidden Home as initial route).
+// Color Wheel is accessible from Home Quick Actions and from within Projects.
 
 import React from 'react';
+import { View, Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text, TouchableOpacity } from 'react-native';
-import { DrawerActions } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
 import StashScreen    from '../screens/StashScreen';
 import ProjectsStack  from './ProjectsStack';
-import ColorStack     from './ColorStack';
 import DiscoverScreen from '../screens/DiscoverScreen';
 import HomeStack      from './HomeStack';
 import COLORS from '../styles/colors';
 
 const Tab = createBottomTabNavigator();
 
-function TabIcon({ emoji, focused }) {
-  return <Text style={{ fontSize: 22, opacity: focused ? 1 : 0.6 }}>{emoji}</Text>;
-}
-
-function HamburgerButton({ navigation }) {
+// Active indicator dot + icon
+function TabIcon({ icon, iconFocused, focused }) {
   return (
-    <TouchableOpacity
-      onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-      style={{ marginRight: 14 }}
-      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-    >
-      <Ionicons name="menu" size={24} color={COLORS.LAVENDER_WHITE} />
-    </TouchableOpacity>
+    <View style={{ alignItems: 'center', paddingTop: 2 }}>
+      <View style={{
+        width: 28, height: 4, borderRadius: 2,
+        backgroundColor: focused ? COLORS.MINT : 'transparent',
+        marginBottom: 4,
+      }} />
+      <Ionicons
+        name={focused ? iconFocused : icon}
+        size={24}
+        color={focused ? COLORS.MINT : COLORS.SOFT_LAVENDER}
+      />
+    </View>
   );
 }
 
@@ -37,24 +37,24 @@ export default function TabNavigator() {
   return (
     <Tab.Navigator
       initialRouteName="Home"
-      screenOptions={({ navigation }) => ({
+      screenOptions={{
         tabBarStyle: {
           backgroundColor: COLORS.MIDNIGHT,
           borderTopColor: COLORS.DEEP_PLUM,
           borderTopWidth: 1,
           paddingBottom: 6,
-          paddingTop: 6,
-          height: 62,
+          paddingTop: 2,
+          height: 68,
         },
         tabBarActiveTintColor:   COLORS.MINT,
         tabBarInactiveTintColor: COLORS.SOFT_LAVENDER,
+        tabBarLabelStyle: { fontSize: 12, fontWeight: '600', marginTop: -2 },
         headerStyle:      { backgroundColor: COLORS.DEEP_PLUM },
         headerTintColor:  COLORS.LAVENDER_WHITE,
         headerTitleStyle: { fontWeight: 'bold' },
-        headerRight: () => <HamburgerButton navigation={navigation} />,
-      })}
+      }}
     >
-      {/* Home — hidden from tab bar; accessible via drawer and as initial route */}
+      {/* Home — hidden from bar; initial route so tab bar shows on Home screens */}
       <Tab.Screen
         name="Home"
         component={HomeStack}
@@ -64,37 +64,37 @@ export default function TabNavigator() {
           tabBarButton: () => null,
         }}
       />
-      <Tab.Screen
-        name="Stash"
-        component={StashScreen}
-        options={{
-          title: 'Stash',
-          tabBarIcon: ({ focused }) => <TabIcon emoji="🧵" focused={focused} />,
-        }}
-      />
+
       <Tab.Screen
         name="Projects"
         component={ProjectsStack}
         options={{
           headerShown: false,
-          tabBarIcon: ({ focused }) => <TabIcon emoji="📋" focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon="grid-outline" iconFocused="grid" focused={focused} />
+          ),
         }}
       />
+
       <Tab.Screen
-        name="Colors"
-        component={ColorStack}
+        name="Stash"
+        component={StashScreen}
         options={{
-          headerShown: false,
-          tabBarLabel: 'Colors',
-          tabBarIcon: ({ focused }) => <TabIcon emoji="🎨" focused={focused} />,
+          title: 'Stash',
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon="layers-outline" iconFocused="layers" focused={focused} />
+          ),
         }}
       />
+
       <Tab.Screen
         name="Discover"
         component={DiscoverScreen}
         options={{
           title: 'Discover',
-          tabBarIcon: ({ focused }) => <TabIcon emoji="🔍" focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon="sparkles-outline" iconFocused="sparkles" focused={focused} />
+          ),
         }}
       />
     </Tab.Navigator>

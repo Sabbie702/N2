@@ -35,11 +35,11 @@ export default function HomeStack({ navigation }) {
 
   return (
     <Stack.Navigator screenOptions={sharedHeader}>
-      {/* Home — Deep Plum native header: "Home" left, hamburger right */}
+      {/* Home — custom header built into HomeScreen; native header hidden */}
       <Stack.Screen
         name="HomeMain"
         component={HomeScreen}
-        options={{ title: 'Home', headerRight: () => <HamburgerRight /> }}
+        options={{ headerShown: false }}
       />
 
       {/* Notes — keeps its own search-toggle custom header; native header hidden */}
