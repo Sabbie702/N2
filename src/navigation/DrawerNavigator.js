@@ -54,6 +54,11 @@ function CustomDrawerContent({ navigation }) {
 
   return (
     <SafeAreaView style={dr.container}>
+      {/* Close button */}
+      <TouchableOpacity style={dr.closeBtn} onPress={close} activeOpacity={0.8}>
+        <Ionicons name="close" size={22} color={COLORS.MIDNIGHT} />
+      </TouchableOpacity>
+
       {/* Decorative dashed curves in header region */}
       <View style={dr.headerDecor} pointerEvents="none">
         <Svg width="100%" height="180">
@@ -100,9 +105,15 @@ function CustomDrawerContent({ navigation }) {
         {/* ── ACCOUNT & UTILITY ── */}
         <Text style={dr.sectionLabel}>ACCOUNT & UTILITY</Text>
         <View style={dr.section}>
-          <MenuRow icon="trophy-outline"           label="Subscription"      onPress={close} />
-          <MenuRow icon="headset-outline"          label="Contact Support"   onPress={close} />
-          <MenuRow icon="shield-checkmark-outline" label="Privacy & Terms"   onPress={close} />
+          <MenuRow icon="trophy-outline"  label="Subscription"    onPress={close} />
+          <MenuRow icon="gift-outline"    label="Invite a Friend" onPress={close} />
+          <MenuRow icon="headset-outline" label="Contact Support" onPress={close} />
+        </View>
+
+        <View style={dr.divider} />
+
+        <View style={dr.section}>
+          <MenuRow icon="shield-checkmark-outline" label="Privacy & Terms" onPress={close} />
           <MenuRow icon="log-out-outline"          label="Log Out" variant="danger" onPress={close} />
         </View>
       </ScrollView>
@@ -189,6 +200,13 @@ const dr = StyleSheet.create({
     height: 1,
     backgroundColor: 'rgba(192,132,252,0.3)',
     marginHorizontal: 22, marginVertical: 14,
+  },
+
+  closeBtn: {
+    position: 'absolute', top: 52, right: 16, zIndex: 10,
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: 'rgba(192,132,252,0.15)',
+    alignItems: 'center', justifyContent: 'center',
   },
 
   footer:     { padding: 20, paddingBottom: 12, alignItems: 'center' },

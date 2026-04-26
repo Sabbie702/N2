@@ -263,9 +263,9 @@ export default function ProjectWorkspaceScreen({ navigation, route }) {
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyEmoji}>🎨</Text>
               <Text style={styles.emptyTitle}>No palettes yet</Text>
-              <Text style={styles.emptySubtitle}>Use the Color Wheel to build a palette, then save it here.</Text>
+              <Text style={styles.emptySubtitle}>Use Color Corner to build a palette, then save it here.</Text>
               <TouchableOpacity style={styles.emptyBtn} onPress={() => navigation.navigate('ColorWheel')} activeOpacity={0.85}>
-                <Text style={styles.emptyBtnText}>Open Color Wheel</Text>
+                <Text style={styles.emptyBtnText}>Open Color Corner</Text>
               </TouchableOpacity>
             </View>
           ) : (

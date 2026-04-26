@@ -26,7 +26,7 @@ export default function ColorStack() {
         name="ColorWheelMain"
         component={ColorWheelScreen}
         options={({ navigation }) => ({
-          title: 'Color Wheel',
+          title: 'Color Corner',
           headerRight: () => (
             <TouchableOpacity
               onPress={() => navigation.dispatch(DrawerActions.openDrawer())}

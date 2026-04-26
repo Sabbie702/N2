@@ -351,13 +351,13 @@ export default function HomeScreen({ navigation }) {
           <QuickAction
             iconName="create-outline"
             title="Notes"
-            subtitle="Capture ideas and plans"
+            subtitle="Jot down ideas & keep track"
             onPress={() => navigation.navigate('Notes')}
           />
           <QuickAction
             iconName="color-palette-outline"
-            title="Color Wheel"
-            subtitle="Find your perfect palette"
+            title="Color Corner"
+            subtitle="Find the perfect color combinations"
             onPress={() => navigation.navigate('Projects', { screen: 'ColorWheel' })}
           />
         </View>
