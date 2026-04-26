@@ -46,3 +46,4 @@ GoogleService-Info.plist
 
 # stray scaffolding directory
 /my-app
+google-services.json
