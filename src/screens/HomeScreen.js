@@ -346,6 +346,24 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <View style={[s.container, { paddingTop: insets.top }]}>
+      {/* Quilted stitch background pattern */}
+      <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" pointerEvents="none">
+        {Array.from({ length: 28 }, (_, i) => (
+          <React.Fragment key={`s${i}`}>
+            <Line
+              x1={0} y1={i * 48} x2={500} y2={i * 48 + 500}
+              stroke={COLORS.SOFT_LAVENDER} strokeWidth="1"
+              strokeDasharray="6 8" opacity="0.12"
+            />
+            <Line
+              x1={500} y1={i * 48} x2={0} y2={i * 48 + 500}
+              stroke={COLORS.SOFT_LAVENDER} strokeWidth="1"
+              strokeDasharray="6 8" opacity="0.12"
+            />
+          </React.Fragment>
+        ))}
+      </Svg>
+
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
 
         {/* Header */}
@@ -431,32 +449,35 @@ export default function HomeScreen({ navigation }) {
 // ─── Styles ────────────────────────────────────────────────────────────────────
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.LAVENDER_WHITE },
-  scroll:    { paddingBottom: 40 },
+  scroll:    { paddingBottom: 100 },
 
   // Header
   header: {
     flexDirection: 'row', alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 18, paddingTop: 16, paddingBottom: 10,
+    paddingHorizontal: 20, paddingTop: 16, paddingBottom: 10,
   },
   headerLeft:  { flexDirection: 'row', alignItems: 'center', gap: 12 },
   headerTitle: {
     fontSize: 24, fontWeight: '900', color: COLORS.MIDNIGHT, letterSpacing: -0.6,
   },
   menuBtn: {
-    width: 50, height: 50, borderRadius: 25,
-    backgroundColor: 'rgba(192,132,252,0.15)',
+    width: 44, height: 44, borderRadius: 22,
+    backgroundColor: '#FFFFFF',
     alignItems: 'center', justifyContent: 'center',
+    shadowColor: COLORS.MIDNIGHT,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.08, shadowRadius: 26, elevation: 3,
   },
 
   // Welcome
-  welcomeSection: { paddingHorizontal: 18, marginBottom: 16 },
+  welcomeSection: { paddingHorizontal: 20, marginBottom: 16 },
   welcomeTitle:   {
-    fontSize: 28, fontWeight: '900', color: COLORS.MIDNIGHT,
-    letterSpacing: -0.7, marginBottom: 8,
+    fontSize: 34, fontWeight: '900', color: COLORS.MIDNIGHT,
+    letterSpacing: -1.2, marginBottom: 8,
   },
   welcomeRow:  { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  welcomeText: { flex: 1, fontSize: 15, color: 'rgba(45,27,78,0.72)', lineHeight: 22 },
+  welcomeText: { flex: 1, fontSize: 16, color: 'rgba(45,27,78,0.72)', lineHeight: 24 },
 
   // Stats bar
   statsBar: {
@@ -492,7 +513,7 @@ const s = StyleSheet.create({
 
   // Hero card
   heroCard: {
-    height: 200, marginHorizontal: 14, borderRadius: 26,
+    height: 220, marginHorizontal: 20, borderRadius: 28,
     overflow: 'hidden', marginBottom: 14,
     shadowColor: COLORS.MIDNIGHT,
     shadowOffset: { width: 0, height: 14 },
@@ -507,13 +528,13 @@ const s = StyleSheet.create({
     backgroundColor: '#F6C5D8',
   },
   heroContent: {
-    position: 'absolute', left: 20, top: 0, bottom: 0,
+    position: 'absolute', left: 24, top: 0, bottom: 0,
     justifyContent: 'center', maxWidth: 185,
   },
-  heroTitle:    { fontSize: 38, fontWeight: '900', color: COLORS.MIDNIGHT, letterSpacing: -1.2 },
+  heroTitle:    { fontSize: 34, fontWeight: '900', color: COLORS.MIDNIGHT, letterSpacing: -1.2 },
   heroSubtitle: { fontSize: 17, color: COLORS.DEEP_PLUM, lineHeight: 23, marginTop: 8 },
   heroChevron:  {
-    width: 44, height: 44, borderRadius: 22,
+    width: 48, height: 48, borderRadius: 24,
     backgroundColor: COLORS.DEEP_PLUM,
     alignItems: 'center', justifyContent: 'center',
     marginTop: 14,
@@ -524,11 +545,11 @@ const s = StyleSheet.create({
 
   // Feature cards
   featureRow: {
-    flexDirection: 'row', gap: 12,
-    marginHorizontal: 14, marginBottom: 24,
+    flexDirection: 'row', gap: 16,
+    marginHorizontal: 20, marginBottom: 24,
   },
   featureCard: {
-    height: 182, borderRadius: 24, padding: 16, overflow: 'hidden',
+    height: 206, borderRadius: 26, padding: 16, overflow: 'hidden',
     shadowColor: COLORS.MIDNIGHT,
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.09, shadowRadius: 28, elevation: 4,
@@ -537,26 +558,27 @@ const s = StyleSheet.create({
   featureSub:   { fontSize: 13, color: 'rgba(45,27,78,0.8)', lineHeight: 19, marginTop: 5 },
   featureChevron: {
     position: 'absolute', bottom: 16, left: 16,
-    width: 40, height: 40, borderRadius: 20,
+    width: 44, height: 44, borderRadius: 22,
     alignItems: 'center', justifyContent: 'center',
     shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 6, elevation: 3,
   },
 
   // Quick Actions
   sectionTitle: {
-    fontSize: 20, fontWeight: '900', color: COLORS.MIDNIGHT,
-    paddingHorizontal: 18, marginBottom: 12, letterSpacing: -0.3,
+    fontSize: 22, fontWeight: '900', color: COLORS.MIDNIGHT,
+    paddingHorizontal: 20, marginBottom: 12, letterSpacing: -0.3,
   },
-  qaRow:  { flexDirection: 'row', gap: 10, paddingHorizontal: 14 },
+  qaRow:  { flexDirection: 'row', gap: 10, paddingHorizontal: 20 },
   qaCard: {
-    flex: 1, minHeight: 148, backgroundColor: '#fff',
-    borderRadius: 20, padding: 12, alignItems: 'center',
+    flex: 1, minHeight: 154, backgroundColor: '#fff',
+    borderRadius: 22, padding: 12, alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: COLORS.MIDNIGHT,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.08, shadowRadius: 24, elevation: 3,
   },
   qaIconWrap: {
-    width: 58, height: 58, borderRadius: 29,
+    width: 62, height: 62, borderRadius: 31,
     borderWidth: 2, borderStyle: 'dashed', borderColor: COLORS.SOFT_LAVENDER,
     backgroundColor: 'rgba(245,240,250,0.6)',
     alignItems: 'center', justifyContent: 'center',
