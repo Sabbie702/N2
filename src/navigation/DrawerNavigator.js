@@ -105,6 +105,7 @@ function CustomDrawerContent({ navigation }) {
         {/* ── ACCOUNT & UTILITY ── */}
         <Text style={dr.sectionLabel}>ACCOUNT & UTILITY</Text>
         <View style={dr.section}>
+          <MenuRow icon="book-outline"   label="Scrapbook"       onPress={() => go('Scrapbook')} />
           <MenuRow icon="trophy-outline"  label="Subscription"    onPress={close} />
           <MenuRow icon="gift-outline"    label="Invite a Friend" onPress={close} />
           <MenuRow icon="headset-outline" label="Contact Support" onPress={close} />

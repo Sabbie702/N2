@@ -2,15 +2,16 @@
 // Redesigned dashboard: custom logo header, Projects hero card,
 // Stash + Discover feature cards, Quick Actions row.
 
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
 } from 'react-native';
 import Svg, { Path, Rect, Line, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
-import { DrawerActions } from '@react-navigation/native';
+import { DrawerActions, useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import COLORS from '../styles/colors';
+import { loadActiveProjects, loadUFOProjects, loadScrapbook } from '../storage/projects';
 
 const USER_NAME = 'Sabbie';
 
@@ -279,9 +280,69 @@ function QuickAction({ iconName, badge, title, subtitle, onPress }) {
   );
 }
 
+// ─── Stats Card ───────────────────────────────────────────────────────────────
+function StatsBar({ active, ufos, completed }) {
+  return (
+    <View style={s.statsBar}>
+      <View style={s.statItem}>
+        <Text style={s.statNum}>{active}</Text>
+        <Text style={s.statLabel}>Active</Text>
+      </View>
+      <View style={s.statDivider} />
+      <View style={s.statItem}>
+        <Text style={[s.statNum, { color: COLORS.AMBER }]}>{ufos}</Text>
+        <Text style={s.statLabel}>UFOs</Text>
+      </View>
+      <View style={s.statDivider} />
+      <View style={s.statItem}>
+        <Text style={[s.statNum, { color: COLORS.MINT }]}>{completed}</Text>
+        <Text style={s.statLabel}>Completed</Text>
+      </View>
+    </View>
+  );
+}
+
+// ─── Continue Card ────────────────────────────────────────────────────────────
+function ContinueCard({ project, onPress }) {
+  if (!project) return null;
+  const pct = Math.round((project.progress || 0) * 100);
+  return (
+    <TouchableOpacity style={s.continueCard} onPress={onPress} activeOpacity={0.9}>
+      <View style={{ flex: 1 }}>
+        <Text style={s.continueLabel}>Continue where you left off</Text>
+        <Text style={s.continueName}>{project.name}</Text>
+        <Text style={s.continueStage}>{project.stage} · {pct}%</Text>
+      </View>
+      <View style={s.continueChevron}>
+        <Ionicons name="chevron-forward" size={20} color="#fff" />
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 // ─── Main Screen ───────────────────────────────────────────────────────────────
 export default function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
+  const [activeCount, setActiveCount] = useState(0);
+  const [ufoCount, setUfoCount] = useState(0);
+  const [completedCount, setCompletedCount] = useState(0);
+  const [recentProject, setRecentProject] = useState(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadActiveProjects().then(active => {
+        setActiveCount(active.length);
+        const sorted = [...active].sort((a, b) => {
+          const aTime = a.updatedAt || a.createdAt || '';
+          const bTime = b.updatedAt || b.createdAt || '';
+          return bTime.localeCompare(aTime);
+        });
+        setRecentProject(sorted[0] || null);
+      });
+      loadUFOProjects().then(ufos => setUfoCount(ufos.length));
+      loadScrapbook().then(sb => setCompletedCount(sb.length));
+    }, [])
+  );
 
   return (
     <View style={[s.container, { paddingTop: insets.top }]}>
@@ -396,6 +457,38 @@ const s = StyleSheet.create({
   },
   welcomeRow:  { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   welcomeText: { flex: 1, fontSize: 15, color: 'rgba(45,27,78,0.72)', lineHeight: 22 },
+
+  // Stats bar
+  statsBar: {
+    flexDirection: 'row', alignItems: 'center',
+    marginHorizontal: 14, marginBottom: 14,
+    backgroundColor: '#fff', borderRadius: 16, padding: 16,
+    shadowColor: COLORS.MIDNIGHT,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06, shadowRadius: 12, elevation: 2,
+  },
+  statItem: { flex: 1, alignItems: 'center' },
+  statNum: { fontSize: 28, fontWeight: '900', color: COLORS.DEEP_PLUM },
+  statLabel: { fontSize: 12, fontWeight: '600', color: 'rgba(45,27,78,0.5)', marginTop: 2 },
+  statDivider: { width: 1, height: 36, backgroundColor: 'rgba(192,132,252,0.25)' },
+
+  // Continue card
+  continueCard: {
+    flexDirection: 'row', alignItems: 'center',
+    marginHorizontal: 14, marginBottom: 14,
+    backgroundColor: COLORS.DEEP_PLUM, borderRadius: 16, padding: 16,
+    shadowColor: COLORS.DEEP_PLUM,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25, shadowRadius: 12, elevation: 4,
+  },
+  continueLabel: { fontSize: 11, color: 'rgba(255,255,255,0.6)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
+  continueName: { fontSize: 18, fontWeight: '800', color: '#fff', marginTop: 4 },
+  continueStage: { fontSize: 13, color: COLORS.MINT, fontWeight: '600', marginTop: 4 },
+  continueChevron: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center', justifyContent: 'center',
+  },
 
   // Hero card
   heroCard: {

@@ -54,14 +54,14 @@ export default function TabNavigator() {
         headerTitleStyle: { fontWeight: 'bold' },
       }}
     >
-      {/* Home — hidden from bar; initial route so tab bar shows on Home screens */}
       <Tab.Screen
         name="Home"
         component={HomeStack}
         options={{
           headerShown: false,
-          tabBarItemStyle: { display: 'none' },
-          tabBarButton: () => null,
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon="home-outline" iconFocused="home" focused={focused} />
+          ),
         }}
       />
 

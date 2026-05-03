@@ -1,5 +1,5 @@
 // EditProjectScreen.js
-// Edit all project fields per Feature 1 spec + advance stages via visual tracker.
+// Edit project fields + More Options menu (Duplicate, Move to UFO, Delete).
 
 import React, { useState } from 'react';
 import {
@@ -9,7 +9,10 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import COLORS from '../styles/colors';
-import { updateProject } from '../storage/projects';
+import {
+  updateProject, deleteProject, duplicateProject,
+  moveToUFO, moveToActive,
+} from '../storage/projects';
 
 // ─── Spec data ────────────────────────────────────────────────────────────────
 
@@ -33,7 +36,7 @@ const BAG_STYLES = [
 ];
 const DEFAULT_TODOS = ['Label', 'Photograph', 'Share'];
 
-// ─── Reusable field ───────────────────────────────────────────────────────────
+// ─── Reusable components ─────────────────────────────────────────────────────
 
 function Field({ label, value, onChangeText, placeholder, multiline = false }) {
   return (
@@ -52,8 +55,6 @@ function Field({ label, value, onChangeText, placeholder, multiline = false }) {
     </View>
   );
 }
-
-// ─── Dropdown picker ──────────────────────────────────────────────────────────
 
 function DropdownPicker({ label, value, options, onSelect, placeholder }) {
   const [open, setOpen] = useState(false);
@@ -93,8 +94,6 @@ function DropdownPicker({ label, value, options, onSelect, placeholder }) {
     </View>
   );
 }
-
-// ─── To-Do list ───────────────────────────────────────────────────────────────
 
 function TodoList({ todos, onToggle, onAdd, onRemoveCustom }) {
   const [newItem, setNewItem] = useState('');
@@ -143,7 +142,42 @@ function TodoList({ todos, onToggle, onAdd, onRemoveCustom }) {
   );
 }
 
-// ─── Stage tracker ────────────────────────────────────────────────────────────
+// ─── More Options Menu ───────────────────────────────────────────────────────
+
+function MoreOptionsSheet({ visible, onClose, onDuplicate, onMoveUFO, onDelete, isUFO }) {
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={onClose} />
+      <View style={styles.optionsSheet}>
+        <View style={styles.sheetHandle} />
+        <Text style={styles.optionsTitle}>Project Actions</Text>
+
+        <TouchableOpacity style={styles.optionRow} onPress={onDuplicate}>
+          <Ionicons name="copy-outline" size={22} color={COLORS.DEEP_PLUM} />
+          <Text style={styles.optionLabel}>Duplicate Project</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.optionRow} onPress={onMoveUFO}>
+          <Ionicons name={isUFO ? 'arrow-undo-outline' : 'archive-outline'} size={22} color={COLORS.AMBER} />
+          <Text style={[styles.optionLabel, { color: COLORS.AMBER }]}>
+            {isUFO ? 'Move Back to Active' : 'Move to UFO'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.optionRow} onPress={onDelete}>
+          <Ionicons name="trash-outline" size={22} color="#ef4444" />
+          <Text style={[styles.optionLabel, { color: '#ef4444' }]}>Delete Project</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.optionCancel} onPress={onClose}>
+          <Text style={styles.optionCancelText}>Cancel</Text>
+        </TouchableOpacity>
+      </View>
+    </Modal>
+  );
+}
+
+// ─── Stage tracker ───────────────────────────────────────────────────────────
 
 function StageTracker({ stages, currentStageIndex, onStageChange }) {
   return (
@@ -151,7 +185,7 @@ function StageTracker({ stages, currentStageIndex, onStageChange }) {
       <Text style={styles.stagesTitle}>Project Stage</Text>
       <Text style={styles.stagesHint}>Tap a stage to mark it as your current stage.</Text>
       {stages.map((stage, i) => {
-        const isDone    = i < currentStageIndex;
+        const isDone = i < currentStageIndex;
         const isCurrent = i === currentStageIndex;
         return (
           <TouchableOpacity
@@ -187,33 +221,35 @@ function StageTracker({ stages, currentStageIndex, onStageChange }) {
 // ─── Main screen ─────────────────────────────────────────────────────────────
 
 export default function EditProjectScreen({ navigation, route }) {
-  const { project } = route.params;
+  const { project, showOptions } = route.params;
+  const [showOptionsMenu, setShowOptionsMenu] = useState(!!showOptions);
 
   // Shared
-  const [name, setName]               = useState(project.name         || '');
-  const [description, setDescription] = useState(project.description  || '');
-  const [madeFor, setMadeFor]         = useState(project.madeFor      || '');
-  const [madeBy, setMadeBy]           = useState(project.madeBy       || '');
-  const [dateStarted, setDateStarted] = useState(project.dateStarted  || '');
+  const [name, setName] = useState(project.name || '');
+  const [description, setDescription] = useState(project.description || '');
+  const [madeFor, setMadeFor] = useState(project.madeFor || '');
+  const [madeBy, setMadeBy] = useState(project.madeBy || '');
+  const [dateStarted, setDateStarted] = useState(project.dateStarted || '');
   const [dateCompleted, setDateCompleted] = useState(project.dateCompleted || '');
-  const [notes, setNotes]             = useState(project.notes        || '');
-  const [tags, setTags]               = useState(project.tags         || '');
+  const [notes, setNotes] = useState(project.notes || '');
+  const [tags, setTags] = useState(project.tags || '');
+  const [storageSpot, setStorageSpot] = useState(project.storageSpot || '');
 
   // Quilt
-  const [patternName, setPatternName]           = useState(project.patternName       || '');
-  const [quiltSize, setQuiltSize]               = useState(project.size              || '');
-  const [customSize, setCustomSize]             = useState('');
-  const [piecingTechnique, setPiecingTechnique] = useState(project.piecingTechnique  || '');
-  const [quiltingStyle, setQuiltingStyle]       = useState(project.quiltingStyle     || '');
-  const [quiltedBy, setQuiltedBy]               = useState(project.quiltedBy         || '');
-  const [fabricsUsed, setFabricsUsed]           = useState(project.fabricsUsed       || '');
+  const [patternName, setPatternName] = useState(project.patternName || '');
+  const [quiltSize, setQuiltSize] = useState(project.size || '');
+  const [customSize, setCustomSize] = useState('');
+  const [piecingTechnique, setPiecingTechnique] = useState(project.piecingTechnique || '');
+  const [quiltingStyle, setQuiltingStyle] = useState(project.quiltingStyle || '');
+  const [quiltedBy, setQuiltedBy] = useState(project.quiltedBy || '');
+  const [fabricsUsed, setFabricsUsed] = useState(project.fabricsUsed || '');
 
   // Bag
-  const [bagPatternName, setBagPatternName] = useState(project.patternName   || '');
-  const [bagStyle, setBagStyle]             = useState(project.bagStyle       || '');
+  const [bagPatternName, setBagPatternName] = useState(project.patternName || '');
+  const [bagStyle, setBagStyle] = useState(project.bagStyle || '');
   const [customBagStyle, setCustomBagStyle] = useState('');
-  const [dimensions, setDimensions]         = useState(project.dimensions     || '');
-  const [supplyList, setSupplyList]         = useState(project.supplyList     || '');
+  const [dimensions, setDimensions] = useState(project.dimensions || '');
+  const [supplyList, setSupplyList] = useState(project.supplyList || '');
 
   // Stage
   const [currentStageIndex, setCurrentStageIndex] = useState(project.currentStageIndex ?? 0);
@@ -226,9 +262,11 @@ export default function EditProjectScreen({ navigation, route }) {
       : DEFAULT_TODOS.map(label => ({ label, done: false }))
   );
 
-  const toggleTodo    = (i) => setTodos(prev => prev.map((t, idx) => idx === i ? { ...t, done: !t.done } : t));
-  const addTodo       = (label) => setTodos(prev => [...prev, { label, done: false }]);
+  const toggleTodo = (i) => setTodos(prev => prev.map((t, idx) => idx === i ? { ...t, done: !t.done } : t));
+  const addTodo = (label) => setTodos(prev => [...prev, { label, done: false }]);
   const removeCustomTodo = (i) => setTodos(prev => prev.filter((_, idx) => idx !== i));
+
+  const isUFO = project.status === 'ufo';
 
   const handleSave = async () => {
     if (!name.trim()) {
@@ -240,8 +278,8 @@ export default function EditProjectScreen({ navigation, route }) {
       ? currentStageIndex / (stages.length - 1)
       : currentStageIndex > 0 ? 1 : 0;
 
-    const resolvedSize     = quiltSize === 'Custom' ? customSize : quiltSize;
-    const resolvedBagStyle = bagStyle  === 'Custom' ? customBagStyle : bagStyle;
+    const resolvedSize = quiltSize === 'Custom' ? customSize : quiltSize;
+    const resolvedBagStyle = bagStyle === 'Custom' ? customBagStyle : bagStyle;
 
     const changes = {
       name: name.trim(),
@@ -252,24 +290,25 @@ export default function EditProjectScreen({ navigation, route }) {
       dateCompleted: dateCompleted.trim(),
       notes: notes.trim(),
       tags: tags.trim(),
+      storageSpot: storageSpot.trim(),
       todos,
       stage: stages[currentStageIndex] || project.stage,
       currentStageIndex,
       progress,
       ...(project.type === 'Quilt'
         ? {
-            patternName:      patternName.trim(),
-            size:             resolvedSize.trim(),
+            patternName: patternName.trim(),
+            size: (resolvedSize || '').trim(),
             piecingTechnique,
             quiltingStyle,
-            quiltedBy:        quiltedBy.trim(),
-            fabricsUsed:      fabricsUsed.trim(),
+            quiltedBy: quiltedBy.trim(),
+            fabricsUsed: fabricsUsed.trim(),
           }
         : {
-            patternName:  bagPatternName.trim(),
-            bagStyle:     resolvedBagStyle.trim(),
-            dimensions:   dimensions.trim(),
-            supplyList:   supplyList.trim(),
+            patternName: bagPatternName.trim(),
+            bagStyle: (resolvedBagStyle || '').trim(),
+            dimensions: dimensions.trim(),
+            supplyList: supplyList.trim(),
           }),
     };
 
@@ -281,6 +320,43 @@ export default function EditProjectScreen({ navigation, route }) {
     }
   };
 
+  const handleDuplicate = async () => {
+    setShowOptionsMenu(false);
+    const copy = await duplicateProject(project.id);
+    if (copy) {
+      Alert.alert('Duplicated', `"${copy.name}" has been created.`);
+      navigation.goBack();
+    }
+  };
+
+  const handleMoveUFO = async () => {
+    setShowOptionsMenu(false);
+    if (isUFO) {
+      await moveToActive(project.id);
+    } else {
+      await moveToUFO(project.id);
+    }
+    navigation.goBack();
+  };
+
+  const handleDelete = () => {
+    setShowOptionsMenu(false);
+    Alert.alert(
+      'Delete Project',
+      `Are you sure you want to delete "${project.name}"? This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete', style: 'destructive',
+          onPress: async () => {
+            await deleteProject(project.id);
+            navigation.popToTop();
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
@@ -289,16 +365,23 @@ export default function EditProjectScreen({ navigation, route }) {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Type badge */}
-        <View style={styles.typeBadge}>
-          <Text style={styles.typeBadgeText}>{project.type}</Text>
+        {/* Type badge + More Options button */}
+        <View style={styles.editHeader}>
+          <View style={styles.typeBadge}>
+            <Text style={styles.typeBadgeText}>{project.type}</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.moreBtn}
+            onPress={() => setShowOptionsMenu(true)}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="ellipsis-horizontal" size={20} color={COLORS.DEEP_PLUM} />
+          </TouchableOpacity>
         </View>
 
         {/* Shared */}
         <Field label="Project Name" value={name} onChangeText={setName}
           placeholder={project.type === 'Quilt' ? 'e.g. Garden Wedding Quilt' : 'e.g. Farmers Market Tote'} />
-        <Field label="Description" value={description} onChangeText={setDescription}
-          placeholder="Describe this project…" multiline />
 
         {/* Quilt fields */}
         {project.type === 'Quilt' && (
@@ -308,17 +391,15 @@ export default function EditProjectScreen({ navigation, route }) {
             <DropdownPicker label="Project Size" value={quiltSize} options={QUILT_SIZES}
               onSelect={setQuiltSize} placeholder="Select size…" />
             {quiltSize === 'Custom' && (
-              <Field label="Custom Size (W × H)" value={customSize} onChangeText={setCustomSize}
+              <Field label="Custom Size (W x H)" value={customSize} onChangeText={setCustomSize}
                 placeholder='e.g. 60 × 80"' />
             )}
+            <Field label="Fabric Details" value={fabricsUsed} onChangeText={setFabricsUsed}
+              placeholder="Fabric descriptions, line names…" multiline />
+            <Field label="Date Started" value={dateStarted} onChangeText={setDateStarted}
+              placeholder="e.g. May 10, 2024" />
             <DropdownPicker label="Piecing Technique" value={piecingTechnique}
               options={PIECING_TECHNIQUES} onSelect={setPiecingTechnique} placeholder="Select technique…" />
-            <DropdownPicker label="Quilting Style" value={quiltingStyle}
-              options={QUILTING_STYLES} onSelect={setQuiltingStyle} placeholder="Select style…" />
-            <Field label="Quilted By" value={quiltedBy} onChangeText={setQuiltedBy}
-              placeholder="e.g. Self, Longarm studio" />
-            <Field label="Fabrics Used" value={fabricsUsed} onChangeText={setFabricsUsed}
-              placeholder="Fabric descriptions, line names…" multiline />
           </>
         )}
 
@@ -334,19 +415,20 @@ export default function EditProjectScreen({ navigation, route }) {
                 placeholder="Describe the bag style" />
             )}
             <Field label="Dimensions" value={dimensions} onChangeText={setDimensions}
-              placeholder="e.g. 12 × 14 × 4 in" />
+              placeholder='e.g. 14"W x 12"H x 5"D' />
             <Field label="Supply List" value={supplyList} onChangeText={setSupplyList}
               placeholder="List hardware, zippers, interfacing…" multiline />
+            <Field label="Made For" value={madeFor} onChangeText={setMadeFor} placeholder="e.g. Myself" />
+            <Field label="Made By" value={madeBy} onChangeText={setMadeBy} placeholder="e.g. Sabbie" />
+            <Field label="Date Started" value={dateStarted} onChangeText={setDateStarted}
+              placeholder="e.g. May 10, 2024" />
           </>
         )}
 
-        {/* Shared footer */}
-        <Field label="Made For"       value={madeFor}       onChangeText={setMadeFor}       placeholder="e.g. Self, Gift for Mom" />
-        <Field label="Made By"        value={madeBy}        onChangeText={setMadeBy}        placeholder="Your name or maker's name" />
-        <Field label="Date Started"   value={dateStarted}   onChangeText={setDateStarted}   placeholder="e.g. Apr 1, 2026" />
-        <Field label="Date Completed" value={dateCompleted} onChangeText={setDateCompleted} placeholder="Leave blank if in progress" />
-        <Field label="Tags"           value={tags}          onChangeText={setTags}          placeholder="e.g. gift, modern, scrappy" />
-        <Field label="Notes"          value={notes}         onChangeText={setNotes}         placeholder="Inspiration, reminders…" multiline />
+        <Field label="Notes" value={notes} onChangeText={setNotes}
+          placeholder="Inspiration, reminders…" multiline />
+        <Field label="Storage Spot" value={storageSpot} onChangeText={setStorageSpot}
+          placeholder="e.g. Sewing Room – Shelf 2" />
 
         <TodoList todos={todos} onToggle={toggleTodo} onAdd={addTodo} onRemoveCustom={removeCustomTodo} />
 
@@ -354,10 +436,24 @@ export default function EditProjectScreen({ navigation, route }) {
           <StageTracker stages={stages} currentStageIndex={currentStageIndex} onStageChange={setCurrentStageIndex} />
         )}
 
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave} activeOpacity={0.85}>
-          <Text style={styles.saveButtonText}>Save Changes</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonRow}>
+          <TouchableOpacity style={styles.cancelBtn} onPress={() => navigation.goBack()}>
+            <Text style={styles.cancelBtnText}>Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave} activeOpacity={0.85}>
+            <Text style={styles.saveButtonText}>Save Changes</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
+
+      <MoreOptionsSheet
+        visible={showOptionsMenu}
+        onClose={() => setShowOptionsMenu(false)}
+        onDuplicate={handleDuplicate}
+        onMoveUFO={handleMoveUFO}
+        onDelete={handleDelete}
+        isUFO={isUFO}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -365,16 +461,25 @@ export default function EditProjectScreen({ navigation, route }) {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.LAVENDER_WHITE },
-  content:   { padding: 20, paddingBottom: 48 },
+  content: { padding: 20, paddingBottom: 48 },
 
+  editHeader: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    alignItems: 'center', marginBottom: 18,
+  },
   typeBadge: {
-    alignSelf: 'flex-start', backgroundColor: COLORS.SOFT_LAVENDER,
-    borderRadius: 20, paddingHorizontal: 14, paddingVertical: 5, marginBottom: 18,
+    backgroundColor: COLORS.SOFT_LAVENDER,
+    borderRadius: 20, paddingHorizontal: 14, paddingVertical: 5,
   },
   typeBadgeText: { fontSize: 13, fontWeight: '600', color: COLORS.DEEP_PLUM },
+  moreBtn: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: 'rgba(91,45,142,0.08)',
+    alignItems: 'center', justifyContent: 'center',
+  },
 
   fieldWrapper: { marginBottom: 16 },
-  fieldLabel:   { fontSize: 13, fontWeight: '600', color: COLORS.MIDNIGHT, marginBottom: 6 },
+  fieldLabel: { fontSize: 13, fontWeight: '600', color: COLORS.MIDNIGHT, marginBottom: 6 },
   input: {
     backgroundColor: '#fff', borderRadius: 10,
     borderWidth: 1.5, borderColor: COLORS.SOFT_LAVENDER,
@@ -389,9 +494,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 13,
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
   },
-  dropdownValue:       { fontSize: 15, color: COLORS.MIDNIGHT },
+  dropdownValue: { fontSize: 15, color: COLORS.MIDNIGHT },
   dropdownPlaceholder: { fontSize: 15, color: COLORS.SOFT_LAVENDER },
-
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' },
   pickerSheet: {
     backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24,
@@ -401,44 +505,95 @@ const styles = StyleSheet.create({
     width: 40, height: 4, borderRadius: 2,
     backgroundColor: '#ddd', alignSelf: 'center', marginBottom: 12,
   },
-  pickerTitle:            { fontSize: 16, fontWeight: '700', color: COLORS.MIDNIGHT, marginBottom: 12 },
-  pickerOption:           { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)' },
-  pickerOptionText:       { fontSize: 15, color: COLORS.MIDNIGHT },
+  pickerTitle: { fontSize: 16, fontWeight: '700', color: COLORS.MIDNIGHT, marginBottom: 12 },
+  pickerOption: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)',
+  },
+  pickerOptionText: { fontSize: 15, color: COLORS.MIDNIGHT },
   pickerOptionTextActive: { fontWeight: '700', color: COLORS.DEEP_PLUM },
 
+  // Todos
   todoCard: {
     backgroundColor: '#fff', borderRadius: 12,
     borderWidth: 1.5, borderColor: COLORS.SOFT_LAVENDER, overflow: 'hidden',
   },
-  todoRow:       { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, paddingHorizontal: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)' },
-  todoCheck:     { padding: 2 },
-  todoLabel:     { flex: 1, fontSize: 14, color: COLORS.MIDNIGHT },
+  todoRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingVertical: 10, paddingHorizontal: 14,
+    borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)',
+  },
+  todoCheck: { padding: 2 },
+  todoLabel: { flex: 1, fontSize: 14, color: COLORS.MIDNIGHT },
   todoLabelDone: { textDecorationLine: 'line-through', color: '#9ca3af' },
-  todoAddRow:    { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8 },
-  todoInput:     { flex: 1, fontSize: 14, color: COLORS.MIDNIGHT, paddingVertical: 4 },
-  todoAddBtn:    { padding: 4, backgroundColor: 'rgba(91,45,142,0.1)', borderRadius: 6 },
+  todoAddRow: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 14, paddingVertical: 8,
+  },
+  todoInput: { flex: 1, fontSize: 14, color: COLORS.MIDNIGHT, paddingVertical: 4 },
+  todoAddBtn: { padding: 4, backgroundColor: 'rgba(91,45,142,0.1)', borderRadius: 6 },
 
+  // Stages
   stagesCard: {
     backgroundColor: '#fff', borderRadius: 14,
     padding: 16, marginTop: 8, marginBottom: 24,
     borderWidth: 1, borderColor: COLORS.SOFT_LAVENDER,
   },
-  stagesTitle: { fontSize: 13, fontWeight: '700', color: COLORS.DEEP_PLUM, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 4 },
-  stagesHint:  { fontSize: 11, color: '#aaaabc', marginBottom: 14 },
-  stageRow:    { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, paddingHorizontal: 8, borderRadius: 10, marginBottom: 4 },
+  stagesTitle: {
+    fontSize: 13, fontWeight: '700', color: COLORS.DEEP_PLUM,
+    textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 4,
+  },
+  stagesHint: { fontSize: 11, color: '#aaaabc', marginBottom: 14 },
+  stageRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingVertical: 10, paddingHorizontal: 8, borderRadius: 10, marginBottom: 4,
+  },
   stageRowCurrent: { backgroundColor: 'rgba(91,45,142,0.07)' },
-  stageRowDone:    { opacity: 0.6 },
-  stageIcon:       { width: 26, height: 26, borderRadius: 13, backgroundColor: '#e8e0f0', alignItems: 'center', justifyContent: 'center' },
-  stageIconDone:    { backgroundColor: COLORS.MINT },
+  stageRowDone: { opacity: 0.6 },
+  stageIcon: {
+    width: 26, height: 26, borderRadius: 13,
+    backgroundColor: '#e8e0f0', alignItems: 'center', justifyContent: 'center',
+  },
+  stageIconDone: { backgroundColor: COLORS.MINT },
   stageIconCurrent: { backgroundColor: COLORS.DEEP_PLUM },
-  stageIconDot:    { width: 8, height: 8, borderRadius: 4, backgroundColor: '#fff' },
-  stageNum:        { fontSize: 10, fontWeight: '600', color: '#6b6b8a' },
-  stageLabel:      { flex: 1, fontSize: 14, color: COLORS.MIDNIGHT },
-  stageLabelDone:    { color: '#6b6b8a', textDecorationLine: 'line-through' },
+  stageIconDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#fff' },
+  stageNum: { fontSize: 10, fontWeight: '600', color: '#6b6b8a' },
+  stageLabel: { flex: 1, fontSize: 14, color: COLORS.MIDNIGHT },
+  stageLabelDone: { color: '#6b6b8a', textDecorationLine: 'line-through' },
   stageLabelCurrent: { fontWeight: '700', color: COLORS.DEEP_PLUM },
-  currentPill:     { backgroundColor: COLORS.DEEP_PLUM, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2 },
+  currentPill: { backgroundColor: COLORS.DEEP_PLUM, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2 },
   currentPillText: { fontSize: 9, color: '#fff', fontWeight: '600' },
 
-  saveButton:     { backgroundColor: COLORS.DEEP_PLUM, borderRadius: 14, paddingVertical: 16, alignItems: 'center' },
+  // More Options sheet
+  optionsSheet: {
+    backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    paddingHorizontal: 20, paddingTop: 12, paddingBottom: 40,
+  },
+  optionsTitle: {
+    fontSize: 16, fontWeight: '700', color: COLORS.MIDNIGHT, marginBottom: 16,
+  },
+  optionRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.06)',
+  },
+  optionLabel: { fontSize: 16, fontWeight: '600', color: COLORS.MIDNIGHT },
+  optionCancel: {
+    paddingVertical: 16, alignItems: 'center', marginTop: 8,
+  },
+  optionCancelText: { fontSize: 16, fontWeight: '600', color: COLORS.DEEP_PLUM },
+
+  // Buttons
+  buttonRow: {
+    flexDirection: 'row', gap: 12, marginTop: 8,
+  },
+  cancelBtn: {
+    flex: 0.4, borderRadius: 14, paddingVertical: 16,
+    alignItems: 'center', borderWidth: 1.5, borderColor: COLORS.SOFT_LAVENDER,
+  },
+  cancelBtnText: { fontSize: 15, fontWeight: '600', color: COLORS.DEEP_PLUM },
+  saveButton: {
+    flex: 0.6, backgroundColor: COLORS.DEEP_PLUM, borderRadius: 14,
+    paddingVertical: 16, alignItems: 'center',
+  },
   saveButtonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });

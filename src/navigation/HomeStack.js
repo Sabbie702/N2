@@ -8,10 +8,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { DrawerActions } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
-import HomeScreen     from '../screens/HomeScreen';
-import NotesScreen    from '../screens/NotesScreen';
-import ProfileScreen  from '../screens/ProfileScreen';
-import SettingsScreen from '../screens/SettingsScreen';
+import HomeScreen      from '../screens/HomeScreen';
+import NotesScreen     from '../screens/NotesScreen';
+import ProfileScreen   from '../screens/ProfileScreen';
+import SettingsScreen  from '../screens/SettingsScreen';
+import ScrapbookScreen from '../screens/ScrapbookScreen';
 import COLORS from '../styles/colors';
 
 const Stack = createNativeStackNavigator();
@@ -59,6 +60,11 @@ export default function HomeStack({ navigation }) {
         name="Settings"
         component={SettingsScreen}
         options={{ title: 'Settings' }}
+      />
+      <Stack.Screen
+        name="Scrapbook"
+        component={ScrapbookScreen}
+        options={{ title: 'Scrapbook' }}
       />
     </Stack.Navigator>
   );

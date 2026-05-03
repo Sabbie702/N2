@@ -10,6 +10,9 @@ const COLORS = {
   MINT: '#4EC9A0',             // Icons, highlights, success states
   SOFT_LAVENDER: '#C084FC',    // Secondary accents, tags, badges
 
+  // Status
+  AMBER: '#F59E0B',             // UFO state only
+
   // Background / neutral
   LAVENDER_WHITE: '#F5F0FA',   // App background, cards
 };
