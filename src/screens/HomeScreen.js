@@ -1,320 +1,145 @@
 // HomeScreen.js
-// Redesigned dashboard: custom logo header, Projects hero card,
-// Stash + Discover feature cards, Quick Actions row.
+// Dashboard using PNG assets for logo, hero, card illustrations, and quick action icons.
+// Stitched heart inline SVG (simple shape). Typography: Playfair Display + Inter.
+// Quick Actions: 2×2 grid with horizontal card layout matching mockup.
 
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet,
+  View, Text, ScrollView, TouchableOpacity, Image, StyleSheet,
 } from 'react-native';
-import Svg, { Path, Rect, Line, Defs, LinearGradient, Stop } from 'react-native-svg';
+import Svg, { Path, Line, Rect as SvgRect, Circle as SvgCircle } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
-import { DrawerActions, useFocusEffect } from '@react-navigation/native';
+import { DrawerActions } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAuth } from '../contexts/AuthContext';
 import COLORS from '../styles/colors';
-import { loadActiveProjects, loadUFOProjects, loadScrapbook } from '../storage/projects';
 
-const USER_NAME = 'Sabbie';
+// ─── PNG Assets ───────────────────────────────────────────────────────────────
+const IMG = {
+  logo:            require('../../assets/images/logo.png'),
+  fabricStackHero: require('../../assets/images/fabric_stack_hero.png'),
+  stashIcon:       require('../../assets/images/stash_icon.png'),
+  discoverIcon:    require('../../assets/images/discover_icon.png'),
+  newProjectIcon:  require('../../assets/images/new_project_icon.png'),
+  colorCornerIcon: require('../../assets/images/color_corner_icon.png'),
+  quiltCalcIcon:   require('../../assets/images/quilt_calculator_icon.png'),
+  threadFlowBg:    require('../../assets/images/thread_flow_bg.png'),
+};
 
-// ─── App Logo ──────────────────────────────────────────────────────────────────
-// Exported so DrawerNavigator can reuse it.
+// ─── App Logo (PNG) — exported for DrawerNavigator reuse ─────────────────────
 export function AppLogo({ size = 58 }) {
-  const br  = Math.round(size * 0.259);
-  const sc  = size / 58;
-
   return (
-    <View style={{
-      width: size, height: size, borderRadius: br,
-      backgroundColor: COLORS.DEEP_PLUM, overflow: 'hidden',
-      shadowColor: COLORS.MIDNIGHT,
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.22, shadowRadius: 20, elevation: 8,
-    }}>
-      {/* 4×4 quilt grid overlay */}
-      <View style={{ ...StyleSheet.absoluteFillObject, padding: 4 * sc, opacity: 0.45 }}>
-        {[0, 1, 2, 3].map(row => (
-          <View key={row} style={{ flex: 1, flexDirection: 'row' }}>
-            {[0, 1, 2, 3].map(col => (
-              <View key={col} style={{
-                flex: 1, margin: sc,
-                backgroundColor: 'rgba(255,255,255,0.1)',
-                borderRadius: 4 * sc,
-              }} />
-            ))}
-          </View>
-        ))}
-      </View>
+    <Image
+      source={IMG.logo}
+      style={{ width: size, height: size, borderRadius: 15 }}
+      resizeMode="cover"
+      accessibilityLabel="Nimble Needle logo"
+    />
+  );
+}
 
-      {/* Dashed mint border + thread line + needle */}
-      <Svg style={StyleSheet.absoluteFill} width={size} height={size}>
-        <Defs>
-          <LinearGradient id="ndl" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0%"   stopColor="white"   stopOpacity="1" />
-            <Stop offset="50%"  stopColor="#B9AACB" stopOpacity="1" />
-            <Stop offset="100%" stopColor="#6B5C86" stopOpacity="1" />
-          </LinearGradient>
-        </Defs>
+// ─── Stitched Teal Heart (inline SVG — simple shape) ─────────────────────────
+export function StitchedHeart({ size = 22 }) {
+  const h = Math.round(size * (20 / 22));
+  return (
+    <Svg width={size} height={h} viewBox="0 0 22 20" fill="none">
+      <Path d="M11 18.5C11 18.5 1 12.5 1 6.5C1 3.5 3.5 1 6.5 1C8.5 1 10 2 11 3.5C12 2 13.5 1 15.5 1C18.5 1 21 3.5 21 6.5C21 12.5 11 18.5 11 18.5Z" fill="#4EC9A0" />
+      <Path d="M4 7C6 5 8 8 11 6C14 4 16 7 18 5" stroke="#2D1B4E" strokeWidth="1.5" strokeDasharray="3 2.5" strokeLinecap="round" strokeOpacity="0.55" />
+      <Line x1="7" y1="4.5" x2="9" y2="6.5" stroke="#2D1B4E" strokeWidth="1.2" strokeLinecap="round" strokeOpacity="0.4" />
+      <Line x1="9" y1="4.5" x2="7" y2="6.5" stroke="#2D1B4E" strokeWidth="1.2" strokeLinecap="round" strokeOpacity="0.4" />
+      <Line x1="13" y1="5" x2="15" y2="7" stroke="#2D1B4E" strokeWidth="1.2" strokeLinecap="round" strokeOpacity="0.4" />
+      <Line x1="15" y1="5" x2="13" y2="7" stroke="#2D1B4E" strokeWidth="1.2" strokeLinecap="round" strokeOpacity="0.4" />
+    </Svg>
+  );
+}
 
-        {/* Dashed border */}
-        <Rect
-          x={1.5} y={1.5}
-          width={size - 3} height={size - 3}
-          rx={br - 1} ry={br - 1}
-          fill="none"
-          stroke={COLORS.MINT}
-          strokeWidth={2.5 * sc}
-          strokeDasharray={`${5 * sc} ${4 * sc}`}
-        />
-
-        {/* Thread line — horizontal, rotated –20° */}
-        <Line
-          x1={9 * sc}  y1={31 * sc}
-          x2={57 * sc} y2={31 * sc}
-          stroke={COLORS.MINT}
-          strokeWidth={3 * sc}
-          strokeLinecap="round"
-          transform={`rotate(-20, ${33 * sc}, ${31 * sc})`}
-        />
-
-        {/* Needle — thin pill, rotated 36° */}
-        <Rect
-          x={26 * sc} y={9 * sc}
-          width={5 * sc} height={44 * sc}
-          rx={2.5 * sc}
-          fill="url(#ndl)"
-          transform={`rotate(36, ${28.5 * sc}, ${31 * sc})`}
-        />
-      </Svg>
-
-      {/* N letterform */}
-      <Text style={{
-        position: 'absolute',
-        fontWeight: '900',
-        color: '#FFF7E9',
-        fontSize: 42 * sc,
-        left: 15 * sc,
-        top: 2 * sc,
-        includeFontPadding: false,
-      }}>
-        N
-      </Text>
-    </View>
+// ─── Notes Icon (inline SVG — no PNG provided) ──────────────────────────────
+function NotesIconSvg() {
+  return (
+    <Svg width={36} height={36} viewBox="0 0 96 96" fill="none">
+      <SvgRect x="22" y="14" width="52" height="68" rx="8" fill="#F5F0FA" stroke="#5B2D8E" strokeWidth="3" />
+      <Path d="M34 32h28M34 44h28M34 56h20" stroke="#C084FC" strokeWidth="3" strokeLinecap="round" strokeDasharray="6 5" />
+      <SvgCircle cx="66" cy="66" r="14" fill="#4EC9A0" stroke="#5B2D8E" strokeWidth="2" />
+      <Path d="M62 66h8M66 62v8" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" />
+    </Svg>
   );
 }
 
 // ─── Hero Card (Projects) ──────────────────────────────────────────────────────
-const FABRIC_LAYERS = [
-  { bottom: 0,   right: -12, width: 158, color: '#476E57' },
-  { bottom: 27,  right: -6,  width: 162, color: '#D9A94F' },
-  { bottom: 54,  right: 4,   width: 166, color: '#FFF7E9' },
-  { bottom: 81,  right: 14,  width: 170, color: '#8E69C8' },
-  { bottom: 108, right: 25,  width: 174, color: '#6D3995' },
-];
-
-const ACCENT_DOTS = [0, 1, 2, 3, 4].map(i => ({
-  right: 48 + i * 21,
-  top:   14 + (i % 2 ? 7 : 0),
-}));
-
 function HeroCard({ onPress }) {
   return (
     <TouchableOpacity style={s.heroCard} onPress={onPress} activeOpacity={0.97}>
-      {/* Gradient background via SVG */}
-      <Svg style={StyleSheet.absoluteFill}>
-        <Defs>
-          <LinearGradient id="hg" x1="0%" y1="0%" x2="100%" y2="100%">
-            <Stop offset="0%"   stopColor="#E8D4F6" stopOpacity="1" />
-            <Stop offset="55%"  stopColor="#EADAF8" stopOpacity="1" />
-            <Stop offset="100%" stopColor="#C084FC" stopOpacity="0.55" />
-          </LinearGradient>
-        </Defs>
-        <Rect x="0" y="0" width="100%" height="100%" fill="url(#hg)" />
+      <View style={[StyleSheet.absoluteFill, s.heroGradient]} />
 
-        {/* Dashed curves */}
-        <Path
-          d="M-10 70 C80 15 140 135 230 82 C330 28 380 138 520 62"
-          fill="none" stroke="white" strokeWidth="2.5"
-          strokeDasharray="8 8" opacity="0.45"
-        />
-        <Path
-          d="M0 155 C90 105 155 185 260 128 C355 80 400 168 520 122"
-          fill="none" stroke="white" strokeWidth="2.5"
-          strokeDasharray="8 8" opacity="0.45"
-        />
-      </Svg>
+      {/* Fabric stack PNG */}
+      <Image
+        source={IMG.fabricStackHero}
+        style={s.heroIllustration}
+        resizeMode="contain"
+        accessible={false}
+      />
 
-      {/* Fabric stack illustration */}
-      <View style={StyleSheet.absoluteFill} pointerEvents="none">
-        {FABRIC_LAYERS.map((l, i) => (
-          <View key={i} style={[s.fabricLayer, {
-            bottom: l.bottom, right: l.right,
-            width: l.width, backgroundColor: l.color,
-          }]} />
-        ))}
-        {ACCENT_DOTS.map((d, i) => (
-          <View key={i} style={[s.accentDot, { right: d.right, top: d.top }]} />
-        ))}
-      </View>
-
-      {/* Text */}
       <View style={s.heroContent}>
         <Text style={s.heroTitle}>Projects</Text>
         <Text style={s.heroSubtitle}>Organize & Love{'\n'}Your Fabric</Text>
-        <View style={s.heroChevron}>
-          <Ionicons name="chevron-forward" size={26} color="#fff" />
+        <View style={s.heroCTA} accessibilityLabel="Go to Projects">
+          <Ionicons name="arrow-forward" size={22} color="#fff" />
         </View>
       </View>
     </TouchableOpacity>
   );
 }
 
-// ─── Stash Illustration ────────────────────────────────────────────────────────
-function StashIllustration() {
-  return (
-    <View style={[StyleSheet.absoluteFill, { overflow: 'hidden' }]} pointerEvents="none">
-      {/* Base box */}
-      <View style={{ position: 'absolute', bottom: 4, right: 20, height: 48, width: 84, borderRadius: 16, backgroundColor: '#E7DAD5' }} />
-      {/* Fabric swatches */}
-      <View style={{ position: 'absolute', bottom: 30, right: 16, height: 40, width: 56, borderRadius: 12, backgroundColor: '#4EC9A0' }} />
-      <View style={{ position: 'absolute', bottom: 50, right: 40, height: 40, width: 56, borderRadius: 12, backgroundColor: '#5B2D8E' }} />
-      <View style={{ position: 'absolute', bottom: 68, right: 10, height: 40, width: 56, borderRadius: 12, backgroundColor: '#C084FC' }} />
-      {/* Thread spools */}
-      <View style={{ position: 'absolute', bottom: 60, right: 100, height: 42, width: 9, borderRadius: 5, backgroundColor: '#D6AA66' }} />
-      <View style={{ position: 'absolute', bottom: 52, right: 114, height: 44, width: 9, borderRadius: 5, backgroundColor: '#B77C54' }} />
-      {/* Thread rings */}
-      <View style={{ position: 'absolute', bottom: 94, right: 62, width: 26, height: 26, borderRadius: 13, borderWidth: 5, borderColor: '#8E69C8' }} />
-      <View style={{ position: 'absolute', bottom: 94, right: 37, width: 26, height: 26, borderRadius: 13, borderWidth: 5, borderColor: '#8E69C8' }} />
-      {/* Needle */}
-      <Svg style={{ position: 'absolute', bottom: 46, right: 76, width: 14, height: 68 }}>
-        <Defs>
-          <LinearGradient id="sndl" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0%"   stopColor="white"   />
-            <Stop offset="50%"  stopColor="#B9AACB" />
-            <Stop offset="100%" stopColor="#6B5C86" />
-          </LinearGradient>
-        </Defs>
-        <Rect x={3} y={2} width={8} height={62} rx={4} fill="url(#sndl)"
-          transform="rotate(38, 7, 34)" />
-      </Svg>
-    </View>
-  );
-}
-
-// ─── Discover Illustration ─────────────────────────────────────────────────────
-function DiscoverIllustration() {
-  return (
-    <View style={[StyleSheet.absoluteFill, { overflow: 'hidden' }]} pointerEvents="none">
-      {/* Magnifier lens */}
-      <View style={{
-        position: 'absolute', bottom: 8, right: 8,
-        width: 82, height: 82, borderRadius: 41,
-        borderWidth: 8, borderColor: COLORS.MIDNIGHT,
-        backgroundColor: 'white', overflow: 'hidden',
-      }}>
-        <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: '#F5F0FA', borderRadius: 41 }} />
-        {/* Colour wheel wedge — lavender */}
-        <View style={{
-          position: 'absolute', top: '12%', left: '28%',
-          width: '44%', height: '58%',
-          backgroundColor: COLORS.SOFT_LAVENDER, opacity: 0.82,
-          transform: [{ rotate: '-45deg' }],
-        }} />
-        {/* Colour wheel wedge — mint */}
-        <View style={{
-          position: 'absolute', top: '28%', left: '12%',
-          width: '58%', height: '44%',
-          backgroundColor: COLORS.MINT, opacity: 0.65,
-          transform: [{ rotate: '-45deg' }],
-        }} />
-      </View>
-      {/* Handle */}
-      <View style={{
-        position: 'absolute', bottom: 0, right: 4,
-        width: 14, height: 42, borderRadius: 7,
-        backgroundColor: COLORS.MIDNIGHT,
-        transform: [{ rotate: '-45deg' }],
-      }} />
-      {/* Sparkles */}
-      <Ionicons name="sparkles" size={15} color={COLORS.SOFT_LAVENDER}
-        style={{ position: 'absolute', right: 6, top: 10 }} />
-      <Ionicons name="sparkles" size={12} color={COLORS.SOFT_LAVENDER}
-        style={{ position: 'absolute', left: 8, top: 50 }} />
-    </View>
-  );
-}
-
-// ─── Feature Card ──────────────────────────────────────────────────────────────
-function FeatureCard({ title, subtitle, tone, illustration, onPress }) {
-  const bg       = tone === 'mint' ? '#EAF8F2' : '#F3E9FB';
-  const btnColor = tone === 'mint' ? COLORS.MINT : COLORS.DEEP_PLUM;
+// ─── Feature Card (Stash / Discover) ──────────────────────────────────────────
+function FeatureCard({ title, subtitle, tone, iconSource, onPress }) {
+  const isMint = tone === 'mint';
+  const btnColor = isMint ? COLORS.MINT : COLORS.DEEP_PLUM;
   return (
     <TouchableOpacity
-      style={[s.featureCard, { backgroundColor: bg }]}
+      style={[s.featureCard, {
+        backgroundColor: isMint ? 'rgba(78,201,160,0.10)' : 'rgba(192,132,252,0.10)',
+        borderWidth: 1,
+        borderColor: isMint ? 'rgba(78,201,160,0.2)' : 'rgba(192,132,252,0.2)',
+      }]}
       onPress={onPress}
       activeOpacity={0.95}
     >
       <Text style={s.featureTitle}>{title}</Text>
       <Text style={s.featureSub}>{subtitle}</Text>
-      <View style={[s.featureChevron, { backgroundColor: btnColor }]}>
-        <Ionicons name="chevron-forward" size={22} color="#fff" />
+
+      {/* Arrow button bottom-left */}
+      <View style={[s.featureArrow, { backgroundColor: btnColor }]}>
+        <Ionicons name="arrow-forward" size={18} color="#fff" />
       </View>
-      {illustration}
+
+      {/* Illustration — fills right+bottom area */}
+      <Image
+        source={iconSource}
+        style={s.featureIcon}
+        resizeMode="contain"
+        accessible={false}
+      />
     </TouchableOpacity>
   );
 }
 
-// ─── Quick Action ──────────────────────────────────────────────────────────────
-function QuickAction({ iconName, badge, title, subtitle, onPress }) {
+// ─── Quick Action Card (horizontal: icon left, text right) ───────────────────
+function QuickAction({ iconSource, iconSvg, title, subtitle, onPress }) {
   return (
-    <TouchableOpacity style={s.qaCard} onPress={onPress} activeOpacity={0.9}>
+    <TouchableOpacity style={s.qaCard} onPress={onPress} activeOpacity={0.9}
+      accessibilityLabel={title}>
       <View style={s.qaIconWrap}>
-        <Ionicons name={iconName} size={28} color={COLORS.DEEP_PLUM} />
-        {badge && (
-          <View style={s.qaBadge}>
-            <Ionicons name="add" size={13} color={COLORS.MIDNIGHT} />
-          </View>
-        )}
+        {iconSource ? (
+          <Image source={iconSource} style={{ width: 36, height: 36 }} resizeMode="contain" />
+        ) : iconSvg}
+        {/* Small mint + badge */}
+        <View style={s.qaBadge}>
+          <Ionicons name="add" size={12} color="#fff" />
+        </View>
       </View>
-      <Text style={s.qaTitle}>{title}</Text>
-      <Text style={s.qaSub}>{subtitle}</Text>
-    </TouchableOpacity>
-  );
-}
-
-// ─── Stats Card ───────────────────────────────────────────────────────────────
-function StatsBar({ active, ufos, completed }) {
-  return (
-    <View style={s.statsBar}>
-      <View style={s.statItem}>
-        <Text style={s.statNum}>{active}</Text>
-        <Text style={s.statLabel}>Active</Text>
-      </View>
-      <View style={s.statDivider} />
-      <View style={s.statItem}>
-        <Text style={[s.statNum, { color: COLORS.AMBER }]}>{ufos}</Text>
-        <Text style={s.statLabel}>UFOs</Text>
-      </View>
-      <View style={s.statDivider} />
-      <View style={s.statItem}>
-        <Text style={[s.statNum, { color: COLORS.MINT }]}>{completed}</Text>
-        <Text style={s.statLabel}>Completed</Text>
-      </View>
-    </View>
-  );
-}
-
-// ─── Continue Card ────────────────────────────────────────────────────────────
-function ContinueCard({ project, onPress }) {
-  if (!project) return null;
-  const pct = Math.round((project.progress || 0) * 100);
-  return (
-    <TouchableOpacity style={s.continueCard} onPress={onPress} activeOpacity={0.9}>
-      <View style={{ flex: 1 }}>
-        <Text style={s.continueLabel}>Continue where you left off</Text>
-        <Text style={s.continueName}>{project.name}</Text>
-        <Text style={s.continueStage}>{project.stage} · {pct}%</Text>
-      </View>
-      <View style={s.continueChevron}>
-        <Ionicons name="chevron-forward" size={20} color="#fff" />
+      <View style={s.qaTextWrap}>
+        <Text style={s.qaTitle}>{title}</Text>
+        <Text style={s.qaSub}>{subtitle}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -323,71 +148,44 @@ function ContinueCard({ project, onPress }) {
 // ─── Main Screen ───────────────────────────────────────────────────────────────
 export default function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
-  const [activeCount, setActiveCount] = useState(0);
-  const [ufoCount, setUfoCount] = useState(0);
-  const [completedCount, setCompletedCount] = useState(0);
-  const [recentProject, setRecentProject] = useState(null);
-
-  useFocusEffect(
-    useCallback(() => {
-      loadActiveProjects().then(active => {
-        setActiveCount(active.length);
-        const sorted = [...active].sort((a, b) => {
-          const aTime = a.updatedAt || a.createdAt || '';
-          const bTime = b.updatedAt || b.createdAt || '';
-          return bTime.localeCompare(aTime);
-        });
-        setRecentProject(sorted[0] || null);
-      });
-      loadUFOProjects().then(ufos => setUfoCount(ufos.length));
-      loadScrapbook().then(sb => setCompletedCount(sb.length));
-    }, [])
-  );
+  const { displayName } = useAuth();
+  const USER_NAME = displayName || 'Friend';
 
   return (
     <View style={[s.container, { paddingTop: insets.top }]}>
-      {/* Quilted stitch background pattern */}
-      <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" pointerEvents="none">
-        {Array.from({ length: 28 }, (_, i) => (
-          <React.Fragment key={`s${i}`}>
-            <Line
-              x1={0} y1={i * 48} x2={500} y2={i * 48 + 500}
-              stroke={COLORS.SOFT_LAVENDER} strokeWidth="1"
-              strokeDasharray="6 8" opacity="0.12"
-            />
-            <Line
-              x1={500} y1={i * 48} x2={0} y2={i * 48 + 500}
-              stroke={COLORS.SOFT_LAVENDER} strokeWidth="1"
-              strokeDasharray="6 8" opacity="0.12"
-            />
-          </React.Fragment>
-        ))}
-      </Svg>
+      {/* Decorative thread flow PNG background */}
+      <Image
+        source={IMG.threadFlowBg}
+        style={[StyleSheet.absoluteFill, { opacity: 0.4 }]}
+        resizeMode="cover"
+        accessible={false}
+      />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
 
-        {/* Header */}
+        {/* Header: PNG logo + Playfair wordmark + hamburger */}
         <View style={s.header}>
           <View style={s.headerLeft}>
-            <AppLogo size={52} />
+            <AppLogo size={58} />
             <Text style={s.headerTitle}>Nimble Needle</Text>
           </View>
           <TouchableOpacity
             style={s.menuBtn}
             onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
             activeOpacity={0.85}
+            accessibilityLabel="Open menu"
           >
-            <Ionicons name="menu" size={26} color={COLORS.MIDNIGHT} />
+            <Ionicons name="menu" size={24} color={COLORS.MIDNIGHT} />
           </TouchableOpacity>
         </View>
 
-        {/* Welcome */}
+        {/* Welcome block */}
         <View style={s.welcomeSection}>
           <Text style={s.welcomeTitle}>Welcome, {USER_NAME}!</Text>
           <View style={s.welcomeRow}>
-            <Text style={{ fontSize: 22 }}>💚</Text>
+            <StitchedHeart size={26} />
             <Text style={s.welcomeText}>
-              One stitch at a time, you're creating{'\n'}something beautiful.
+              One stitch at a time, you're creating something beautiful.
             </Text>
           </View>
         </View>
@@ -400,45 +198,54 @@ export default function HomeScreen({ navigation }) {
           <View style={{ flex: 1 }}>
             <FeatureCard
               title="Stash"
-              subtitle={`Everything you\ncreate with`}
+              subtitle={"Everything you\ncreate with"}
               tone="mint"
-              illustration={<StashIllustration />}
+              iconSource={IMG.stashIcon}
               onPress={() => navigation.navigate('Stash')}
             />
           </View>
           <View style={{ flex: 1 }}>
             <FeatureCard
               title="Discover"
-              subtitle={`Browse, save &\nget inspired`}
+              subtitle={"Browse, save &\nget inspired"}
               tone="lavender"
-              illustration={<DiscoverIllustration />}
+              iconSource={IMG.discoverIcon}
               onPress={() => navigation.navigate('Discover')}
             />
           </View>
         </View>
 
-        {/* Quick Actions */}
+        {/* Quick Actions: 2×2 grid */}
         <Text style={s.sectionTitle}>Quick Actions</Text>
-        <View style={s.qaRow}>
-          <QuickAction
-            iconName="grid-outline"
-            badge
-            title="New Project"
-            subtitle="Start a new quilt project"
-            onPress={() => navigation.navigate('Projects', { screen: 'NewProject' })}
-          />
-          <QuickAction
-            iconName="create-outline"
-            title="Notes"
-            subtitle="Jot down ideas & keep track"
-            onPress={() => navigation.navigate('Notes')}
-          />
-          <QuickAction
-            iconName="color-palette-outline"
-            title="Color Corner"
-            subtitle="Find the perfect color combinations"
-            onPress={() => navigation.navigate('Projects', { screen: 'ColorWheel' })}
-          />
+        <View style={s.qaGrid}>
+          <View style={s.qaGridRow}>
+            <QuickAction
+              iconSource={IMG.newProjectIcon}
+              title="New Project"
+              subtitle="Start a new quilt project"
+              onPress={() => navigation.navigate('Projects', { screen: 'NewProject' })}
+            />
+            <QuickAction
+              iconSvg={<NotesIconSvg />}
+              title="Notes"
+              subtitle="Jot down ideas & thoughts"
+              onPress={() => navigation.navigate('Notes')}
+            />
+          </View>
+          <View style={s.qaGridRow}>
+            <QuickAction
+              iconSource={IMG.colorCornerIcon}
+              title="Color Corner"
+              subtitle="Find your perfect palette"
+              onPress={() => navigation.navigate('Projects', { screen: 'ColorWheel' })}
+            />
+            <QuickAction
+              iconSource={IMG.quiltCalcIcon}
+              title="Quilt Calculator"
+              subtitle="Calculate fabric needs"
+              onPress={() => {}}
+            />
+          </View>
         </View>
 
       </ScrollView>
@@ -449,7 +256,7 @@ export default function HomeScreen({ navigation }) {
 // ─── Styles ────────────────────────────────────────────────────────────────────
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.LAVENDER_WHITE },
-  scroll:    { paddingBottom: 100 },
+  scroll: { paddingBottom: 100 },
 
   // Header
   header: {
@@ -457,145 +264,131 @@ const s = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20, paddingTop: 16, paddingBottom: 10,
   },
-  headerLeft:  { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   headerTitle: {
-    fontSize: 24, fontWeight: '900', color: COLORS.MIDNIGHT, letterSpacing: -0.6,
+    fontSize: 22, fontFamily: 'PlayfairDisplay_700Bold',
+    color: COLORS.MIDNIGHT,
   },
   menuBtn: {
-    width: 44, height: 44, borderRadius: 22,
-    backgroundColor: '#FFFFFF',
+    width: 48, height: 48, borderRadius: 24,
+    backgroundColor: 'rgba(192,132,252,0.12)',
     alignItems: 'center', justifyContent: 'center',
-    shadowColor: COLORS.MIDNIGHT,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08, shadowRadius: 26, elevation: 3,
   },
 
   // Welcome
-  welcomeSection: { paddingHorizontal: 20, marginBottom: 16 },
-  welcomeTitle:   {
-    fontSize: 34, fontWeight: '900', color: COLORS.MIDNIGHT,
-    letterSpacing: -1.2, marginBottom: 8,
+  welcomeSection: { paddingHorizontal: 20, marginBottom: 20 },
+  welcomeTitle: {
+    fontSize: 28, fontFamily: 'PlayfairDisplay_800ExtraBold',
+    color: COLORS.MIDNIGHT, letterSpacing: -0.8,
+    lineHeight: 34, marginBottom: 8,
   },
-  welcomeRow:  { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  welcomeText: { flex: 1, fontSize: 16, color: 'rgba(45,27,78,0.72)', lineHeight: 24 },
-
-  // Stats bar
-  statsBar: {
-    flexDirection: 'row', alignItems: 'center',
-    marginHorizontal: 14, marginBottom: 14,
-    backgroundColor: '#fff', borderRadius: 16, padding: 16,
-    shadowColor: COLORS.MIDNIGHT,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06, shadowRadius: 12, elevation: 2,
-  },
-  statItem: { flex: 1, alignItems: 'center' },
-  statNum: { fontSize: 28, fontWeight: '900', color: COLORS.DEEP_PLUM },
-  statLabel: { fontSize: 12, fontWeight: '600', color: 'rgba(45,27,78,0.5)', marginTop: 2 },
-  statDivider: { width: 1, height: 36, backgroundColor: 'rgba(192,132,252,0.25)' },
-
-  // Continue card
-  continueCard: {
-    flexDirection: 'row', alignItems: 'center',
-    marginHorizontal: 14, marginBottom: 14,
-    backgroundColor: COLORS.DEEP_PLUM, borderRadius: 16, padding: 16,
-    shadowColor: COLORS.DEEP_PLUM,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25, shadowRadius: 12, elevation: 4,
-  },
-  continueLabel: { fontSize: 11, color: 'rgba(255,255,255,0.6)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
-  continueName: { fontSize: 18, fontWeight: '800', color: '#fff', marginTop: 4 },
-  continueStage: { fontSize: 13, color: COLORS.MINT, fontWeight: '600', marginTop: 4 },
-  continueChevron: {
-    width: 36, height: 36, borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    alignItems: 'center', justifyContent: 'center',
+  welcomeRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  welcomeText: {
+    flex: 1, fontSize: 15, fontFamily: 'Inter_400Regular',
+    color: 'rgba(45,27,78,0.65)', lineHeight: 22,
   },
 
   // Hero card
   heroCard: {
     height: 220, marginHorizontal: 20, borderRadius: 28,
-    overflow: 'hidden', marginBottom: 14,
+    overflow: 'hidden', marginBottom: 16,
     shadowColor: COLORS.MIDNIGHT,
     shadowOffset: { width: 0, height: 14 },
     shadowOpacity: 0.12, shadowRadius: 32, elevation: 6,
   },
-  fabricLayer: {
-    position: 'absolute', height: 38, borderRadius: 16,
-    shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 4, elevation: 2,
+  heroGradient: {
+    backgroundColor: '#E8D4F6',
   },
-  accentDot: {
-    position: 'absolute', width: 8, height: 8, borderRadius: 4,
-    backgroundColor: '#F6C5D8',
+  heroIllustration: {
+    position: 'absolute', right: -10, bottom: 0,
+    width: 200, height: 200 * (220 / 360),
   },
   heroContent: {
     position: 'absolute', left: 24, top: 0, bottom: 0,
-    justifyContent: 'center', maxWidth: 185,
+    justifyContent: 'center', maxWidth: 180,
   },
-  heroTitle:    { fontSize: 34, fontWeight: '900', color: COLORS.MIDNIGHT, letterSpacing: -1.2 },
-  heroSubtitle: { fontSize: 17, color: COLORS.DEEP_PLUM, lineHeight: 23, marginTop: 8 },
-  heroChevron:  {
+  heroTitle: {
+    fontSize: 32, fontFamily: 'PlayfairDisplay_900Black',
+    color: COLORS.MIDNIGHT, letterSpacing: -1, lineHeight: 36,
+  },
+  heroSubtitle: {
+    fontSize: 14, fontFamily: 'Inter_400Regular',
+    color: 'rgba(45,27,78,0.65)', marginTop: 6, lineHeight: 20,
+  },
+  heroCTA: {
     width: 48, height: 48, borderRadius: 24,
     backgroundColor: COLORS.DEEP_PLUM,
     alignItems: 'center', justifyContent: 'center',
     marginTop: 14,
-    shadowColor: COLORS.DEEP_PLUM,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35, shadowRadius: 8, elevation: 4,
   },
 
   // Feature cards
   featureRow: {
-    flexDirection: 'row', gap: 16,
+    flexDirection: 'row', gap: 14,
     marginHorizontal: 20, marginBottom: 24,
   },
   featureCard: {
-    height: 206, borderRadius: 26, padding: 16, overflow: 'hidden',
-    shadowColor: COLORS.MIDNIGHT,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.09, shadowRadius: 28, elevation: 4,
+    height: 220, borderRadius: 26, padding: 20, overflow: 'hidden',
   },
-  featureTitle: { fontSize: 26, fontWeight: '900', color: COLORS.MIDNIGHT, letterSpacing: -0.7 },
-  featureSub:   { fontSize: 13, color: 'rgba(45,27,78,0.8)', lineHeight: 19, marginTop: 5 },
-  featureChevron: {
+  featureTitle: {
+    fontSize: 22, fontFamily: 'PlayfairDisplay_900Black',
+    color: COLORS.MIDNIGHT,
+  },
+  featureSub: {
+    fontSize: 13, fontFamily: 'Inter_400Regular',
+    color: 'rgba(45,27,78,0.55)', lineHeight: 18, marginTop: 6,
+  },
+  featureArrow: {
     position: 'absolute', bottom: 16, left: 16,
-    width: 44, height: 44, borderRadius: 22,
+    width: 40, height: 40, borderRadius: 20,
     alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 6, elevation: 3,
+  },
+  featureIcon: {
+    position: 'absolute', bottom: 8, right: 8,
+    width: 80, height: 80,
   },
 
-  // Quick Actions
+  // Quick Actions — 2×2 grid
   sectionTitle: {
-    fontSize: 22, fontWeight: '900', color: COLORS.MIDNIGHT,
-    paddingHorizontal: 20, marginBottom: 12, letterSpacing: -0.3,
+    fontSize: 20, fontFamily: 'PlayfairDisplay_900Black',
+    color: COLORS.MIDNIGHT,
+    paddingHorizontal: 20, marginBottom: 14,
   },
-  qaRow:  { flexDirection: 'row', gap: 10, paddingHorizontal: 20 },
+  qaGrid: {
+    paddingHorizontal: 20, gap: 12,
+  },
+  qaGridRow: {
+    flexDirection: 'row', gap: 12,
+  },
   qaCard: {
-    flex: 1, minHeight: 154, backgroundColor: '#fff',
-    borderRadius: 22, padding: 12, alignItems: 'center',
-    justifyContent: 'center',
+    flex: 1, flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 18, padding: 14,
     shadowColor: COLORS.MIDNIGHT,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08, shadowRadius: 24, elevation: 3,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06, shadowRadius: 16, elevation: 2,
   },
   qaIconWrap: {
-    width: 62, height: 62, borderRadius: 31,
+    width: 52, height: 52, borderRadius: 26,
     borderWidth: 2, borderStyle: 'dashed', borderColor: COLORS.SOFT_LAVENDER,
-    backgroundColor: 'rgba(245,240,250,0.6)',
     alignItems: 'center', justifyContent: 'center',
-    marginBottom: 8,
+    marginRight: 12,
   },
   qaBadge: {
-    position: 'absolute', bottom: -2, right: -2,
-    width: 22, height: 22, borderRadius: 11,
+    position: 'absolute', bottom: -3, right: -3,
+    width: 20, height: 20, borderRadius: 10,
     backgroundColor: COLORS.MINT,
     alignItems: 'center', justifyContent: 'center',
+    borderWidth: 2, borderColor: '#fff',
   },
+  qaTextWrap: { flex: 1 },
   qaTitle: {
-    fontSize: 13, fontWeight: '900', color: COLORS.MIDNIGHT,
-    textAlign: 'center', lineHeight: 17,
+    fontSize: 14, fontFamily: 'Inter_700Bold',
+    color: COLORS.MIDNIGHT, lineHeight: 18,
   },
   qaSub: {
-    fontSize: 11, color: 'rgba(45,27,78,0.62)',
-    textAlign: 'center', lineHeight: 15, marginTop: 4,
+    fontSize: 11, fontFamily: 'Inter_400Regular',
+    color: 'rgba(45,27,78,0.5)',
+    lineHeight: 15, marginTop: 2,
   },
 });

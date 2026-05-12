@@ -1,9 +1,9 @@
 // TabNavigator.js
-// 4-tab bottom navigator: Projects, Stash, Discover (+ hidden Home as initial route).
-// Color Wheel is accessible from Home Quick Actions and from within Projects.
+// 4-tab bottom navigator: Home, Projects, Stash, Discover.
+// Midnight background, mint active states, Inter font labels.
 
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -15,10 +15,10 @@ import COLORS from '../styles/colors';
 
 const Tab = createBottomTabNavigator();
 
-// Active indicator dot + icon
 function TabIcon({ icon, iconFocused, focused }) {
   return (
     <View style={{ alignItems: 'center', paddingTop: 2 }}>
+      {/* Mint pill indicator for active tab */}
       <View style={{
         width: 28, height: 4, borderRadius: 2,
         backgroundColor: focused ? COLORS.MINT : 'transparent',
@@ -48,17 +48,21 @@ export default function TabNavigator() {
           height: 86,
           position: 'absolute',
           shadowColor: COLORS.MIDNIGHT,
-          shadowOffset: { width: 0, height: -8 },
-          shadowOpacity: 0.15,
-          shadowRadius: 24,
+          shadowOffset: { width: 0, height: -18 },
+          shadowOpacity: 0.35,
+          shadowRadius: 40,
           elevation: 10,
         },
-        tabBarActiveTintColor:   COLORS.MINT,
+        tabBarActiveTintColor: 'rgba(255,255,255,0.9)',
         tabBarInactiveTintColor: 'rgba(255,255,255,0.9)',
-        tabBarLabelStyle: { fontSize: 12, fontWeight: '600', marginTop: -2 },
-        headerStyle:      { backgroundColor: COLORS.DEEP_PLUM },
-        headerTintColor:  COLORS.LAVENDER_WHITE,
-        headerTitleStyle: { fontWeight: 'bold' },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontFamily: 'Inter_500Medium',
+          marginTop: -2,
+        },
+        headerStyle: { backgroundColor: COLORS.DEEP_PLUM },
+        headerTintColor: COLORS.LAVENDER_WHITE,
+        headerTitleStyle: { fontFamily: 'Inter_700Bold' },
       }}
     >
       <Tab.Screen
@@ -69,6 +73,7 @@ export default function TabNavigator() {
           tabBarIcon: ({ focused }) => (
             <TabIcon icon="home-outline" iconFocused="home" focused={focused} />
           ),
+          tabBarAccessibilityLabel: 'Home',
         }}
       />
 
@@ -80,6 +85,7 @@ export default function TabNavigator() {
           tabBarIcon: ({ focused }) => (
             <TabIcon icon="grid-outline" iconFocused="grid" focused={focused} />
           ),
+          tabBarAccessibilityLabel: 'Projects',
         }}
       />
 
@@ -91,6 +97,7 @@ export default function TabNavigator() {
           tabBarIcon: ({ focused }) => (
             <TabIcon icon="layers-outline" iconFocused="layers" focused={focused} />
           ),
+          tabBarAccessibilityLabel: 'Stash',
         }}
       />
 
@@ -100,8 +107,9 @@ export default function TabNavigator() {
         options={{
           title: 'Discover',
           tabBarIcon: ({ focused }) => (
-            <TabIcon icon="sparkles-outline" iconFocused="sparkles" focused={focused} />
+            <TabIcon icon="compass-outline" iconFocused="compass" focused={focused} />
           ),
+          tabBarAccessibilityLabel: 'Discover',
         }}
       />
     </Tab.Navigator>
