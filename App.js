@@ -8,8 +8,28 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { AuthProvider, useAuth } from './src/contexts/AuthContext';
+import AuthNavigator from './src/navigation/AuthNavigator';
 import DrawerNavigator from './src/navigation/DrawerNavigator';
 import AuthStack       from './src/navigation/AuthStack';
+
+function RootNavigator() {
+  const { user, initializing, onboarding } = useAuth();
+
+  if (initializing) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F5F0FA' }}>
+        <ActivityIndicator size="large" color="#5B2D8E" />
+      </View>
+    );
+  }
+
+  if (!user || onboarding) {
+    return <AuthNavigator />;
+  }
+
+  return <DrawerNavigator />;
+}
 
 export default function App() {
   const [fontsLoaded] = useFonts({

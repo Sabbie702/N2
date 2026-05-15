@@ -19,6 +19,7 @@ const Tab = createBottomTabNavigator();
 function TabIcon({ icon, iconFocused, focused }) {
   return (
     <View style={{ alignItems: 'center', paddingTop: 2 }}>
+      {/* Mint pill indicator for active tab */}
       <View style={{
         width: 28, height: 4, borderRadius: 2,
         backgroundColor: focused ? COLORS.MINT : 'transparent',
@@ -40,18 +41,29 @@ export default function TabNavigator() {
       screenOptions={{
         tabBarStyle: {
           backgroundColor: COLORS.MIDNIGHT,
-          borderTopColor: COLORS.DEEP_PLUM,
-          borderTopWidth: 1,
-          paddingBottom: 6,
-          paddingTop: 2,
-          height: 68,
+          borderTopColor: 'transparent',
+          borderTopLeftRadius: 28,
+          borderTopRightRadius: 28,
+          paddingBottom: 8,
+          paddingTop: 4,
+          height: 86,
+          position: 'absolute',
+          shadowColor: COLORS.MIDNIGHT,
+          shadowOffset: { width: 0, height: -18 },
+          shadowOpacity: 0.35,
+          shadowRadius: 40,
+          elevation: 10,
         },
-        tabBarActiveTintColor:   COLORS.MINT,
-        tabBarInactiveTintColor: COLORS.SOFT_LAVENDER,
-        tabBarLabelStyle: { fontSize: 12, fontWeight: '600', marginTop: -2 },
-        headerStyle:      { backgroundColor: COLORS.DEEP_PLUM },
-        headerTintColor:  COLORS.LAVENDER_WHITE,
-        headerTitleStyle: { fontWeight: 'bold' },
+        tabBarActiveTintColor: 'rgba(255,255,255,0.9)',
+        tabBarInactiveTintColor: 'rgba(255,255,255,0.9)',
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontFamily: 'Inter_500Medium',
+          marginTop: -2,
+        },
+        headerStyle: { backgroundColor: COLORS.DEEP_PLUM },
+        headerTintColor: COLORS.LAVENDER_WHITE,
+        headerTitleStyle: { fontFamily: 'Inter_700Bold' },
       }}
     >
       {/* Home — hidden; initial route so tab bar renders on Home screens */}
@@ -60,8 +72,10 @@ export default function TabNavigator() {
         component={HomeStack}
         options={{
           headerShown: false,
-          tabBarItemStyle: { display: 'none' },
-          tabBarButton: () => null,
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon="home-outline" iconFocused="home" focused={focused} />
+          ),
+          tabBarAccessibilityLabel: 'Home',
         }}
       />
 
@@ -73,6 +87,7 @@ export default function TabNavigator() {
           tabBarIcon: ({ focused }) => (
             <TabIcon icon="layers-outline" iconFocused="layers" focused={focused} />
           ),
+          tabBarAccessibilityLabel: 'Stash',
         }}
       />
 
@@ -107,6 +122,7 @@ export default function TabNavigator() {
           tabBarIcon: ({ focused }) => (
             <TabIcon icon="compass-outline" iconFocused="compass" focused={focused} />
           ),
+          tabBarAccessibilityLabel: 'Discover',
         }}
       />
     </Tab.Navigator>

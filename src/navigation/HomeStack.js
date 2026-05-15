@@ -84,6 +84,36 @@ export default function HomeStack({ navigation }) {
         component={BindingCalculatorScreen}
         options={{ title: 'Binding Calculator' }}
       />
+      <Stack.Screen
+        name="Scrapbook"
+        component={ScrapbookScreen}
+        options={{ title: 'Scrapbook' }}
+      />
+      <Stack.Screen
+        name="CalculatorHub"
+        component={CalculatorHub}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="BackingBatting"
+        component={BackingBattingCalc}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Binding"
+        component={BindingCalc}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="BorderYardage"
+        component={BorderCalc}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="BedQuiltSizes"
+        component={BedQuiltSizes}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 }

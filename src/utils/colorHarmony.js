@@ -1,175 +1,138 @@
-// src/utils/colorHarmony.js
-// N2 — Color Wheel Intelligence
-// Palette generation for all 4 harmony types + Anthropic API advisor
+/**
+ * N2 — Nimble Needle
+ * Color Harmony Engine  v1.0
+ *
+ * Converts HEX → HSL, calculates all 5 harmony types,
+ * matches ideal harmony colors back to real fabric names.
+ */
 
-import { hslToHex, rnd } from './colorUtils';
+import { findClosestColors, hexToRgb } from '../data/fabricColors';
 
-// ─────────────────────────────────────────────
-// Palette type definitions
-// ─────────────────────────────────────────────
-
-export const PALETTE_TYPES = {
-  tone: {
-    id: 'tone',
-    label: 'Tone on Tone',
-    tag: 'always works',
-    description: 'Same color, lighter and deeper — classic quilting elegance',
-    colorCount: 5,
-  },
-  sisters: {
-    id: 'sisters',
-    label: 'Fabric Sisters',
-    tag: 'flowing',
-    description: 'Neighbors on the wheel — they naturally want to be together',
-    colorCount: 5,
-  },
-  contrast: {
-    id: 'contrast',
-    label: 'Bold Contrast',
-    tag: 'dramatic',
-    description: 'The color directly opposite — your quilt will stop people in their tracks',
-    colorCount: 4,
-  },
-  trio: {
-    id: 'trio',
-    label: 'Lively Trio',
-    tag: 'balanced',
-    description: 'Three perfectly spaced colors — a timeless combination quilters reach for again and again',
-    colorCount: 5,
-  },
+export const HARMONY_TYPES = {
+  tone_on_tone:   { id:'tone_on_tone',   label:'Tone on Tone',   icon:'🌊', technicalName:'Monochromatic',      quilterDescription:'Different depths of the same color family — creates a calm, layered look' },
+  fabric_sisters: { id:'fabric_sisters', label:'Fabric Sisters',  icon:'🌸', technicalName:'Analogous',          quilterDescription:'Colors that sit side-by-side on the wheel — they naturally belong together' },
+  bold_contrast:  { id:'bold_contrast',  label:'Bold Contrast',   icon:'⚡', technicalName:'Complementary',      quilterDescription:'Colors directly opposite each other — maximum pop and drama' },
+  lively_trio:    { id:'lively_trio',    label:'Lively Trio',     icon:'✨', technicalName:'Triadic',            quilterDescription:'Three colors equally spaced around the wheel — vibrant and balanced' },
+  split_contrast: { id:'split_contrast', label:'Split Contrast',  icon:'🎨', technicalName:'Split Complementary',quilterDescription:"The complement's two neighbors — softer than Bold Contrast, still exciting" },
 };
 
-// ─────────────────────────────────────────────
-// Base color generators
-// Each returns an array of [h, s, l] triplets
-// Wide ranges are INTENTIONAL — Re-stitch must
-// produce visually distinct results every time
-// ─────────────────────────────────────────────
+export function hexToHsl(hex) {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return null;
+  let { r, g, b } = rgb;
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), delta = max - min;
+  let h = 0, s = 0;
+  const l = (max + min) / 2;
+  if (delta !== 0) {
+    s = l > 0.5 ? delta / (2 - max - min) : delta / (max + min);
+    if (max === r)      h = ((g - b) / delta + (g < b ? 6 : 0)) / 6;
+    else if (max === g) h = ((b - r) / delta + 2) / 6;
+    else                h = ((r - g) / delta + 4) / 6;
+  }
+  return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+}
 
-function toneBase(h, s, l) {
+export function hslToHex(h, s, l) {
+  s /= 100; l /= 100;
+  const k = n => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  const toH = x => Math.round(Math.max(0, Math.min(255, x * 255))).toString(16).padStart(2, '0');
+  return `#${toH(f(0))}${toH(f(8))}${toH(f(4))}`;
+}
+
+function rot(h, deg) { return (h + deg + 360) % 360; }
+
+function getToneOnTone({ h, s, l }) {
   return [
-    [h, rnd(4, 20),                           rnd(83, 94)],
-    [h, rnd(18, 42),                          rnd(66, 80)],
-    [h, s,                                    l],
-    [h, Math.min(100, s * 1.05),              Math.max(10, l - rnd(12, 24))],
-    [h, Math.min(100, s * 1.1),               Math.max(8,  l - rnd(24, 38))],
+    { hex: hslToHex(h, s, Math.min(l + 20, 90)), label:'Light shade' },
+    { hex: hslToHex(h, s, l),                     label:'Source color' },
+    { hex: hslToHex(h, s, Math.max(l - 20, 10)), label:'Dark shade' },
+    { hex: hslToHex(h, Math.max(s - 20, 0), l),  label:'Muted tone' },
   ];
 }
 
-function sistersBase(h, s, l) {
+function getFabricSisters({ h, s, l }) {
   return [
-    [h + rnd(-50, -28), s, l + rnd(-4, 6)],
-    [h + rnd(-26, -10), s, l + rnd(-4, 6)],
-    [h,                 s, l],
-    [h + rnd(10,  26),  s, l + rnd(-4, 6)],
-    [h + rnd(28,  50),  s, l + rnd(-4, 6)],
+    { hex: hslToHex(rot(h, -30), s, l), label:'Sister left' },
+    { hex: hslToHex(h, s, l),            label:'Source color' },
+    { hex: hslToHex(rot(h,  30), s, l), label:'Sister right' },
+    { hex: hslToHex(rot(h,  60), s, l), label:'Far sister' },
   ];
 }
 
-function contrastBase(h, s, l) {
+function getBoldContrast({ h, s, l }) {
+  const c = rot(h, 180);
   return [
-    [h,           rnd(12, 38), rnd(68, 86)],
-    [h,           s,           l],
-    [(h + 180) % 360, rnd(12, 38), rnd(68, 86)],
-    [(h + 180) % 360, s,           l],
+    { hex: hslToHex(h, s, l),              label:'Source color' },
+    { hex: hslToHex(c, s, l),              label:'Complement' },
+    { hex: hslToHex(c, s, Math.min(l+15,90)), label:'Light complement' },
+    { hex: hslToHex(c, s, Math.max(l-15,10)), label:'Dark complement' },
   ];
 }
 
-function trioBase(h, s, l) {
+function getLivelyTrio({ h, s, l }) {
   return [
-    [h,                         s,           l],
-    [h,                         rnd(10, 28), rnd(72, 88)],
-    [(h + rnd(108, 132)) % 360, s,           l],
-    [(h + rnd(108, 132)) % 360, rnd(10, 28), rnd(72, 88)],
-    [(h + rnd(228, 252)) % 360, s,           l],
+    { hex: hslToHex(h,            s, l), label:'Source color' },
+    { hex: hslToHex(rot(h, 120), s, l), label:'Trio partner 1' },
+    { hex: hslToHex(rot(h, 240), s, l), label:'Trio partner 2' },
   ];
 }
 
-const BASE_GENERATORS = {
-  tone:     toneBase,
-  sisters:  sistersBase,
-  contrast: contrastBase,
-  trio:     trioBase,
-};
-
-// ─────────────────────────────────────────────
-// Main palette generation function
-// ─────────────────────────────────────────────
-
-export function generatePalette(typeId, h, s, l, locks = [], current = []) {
-  const generator = BASE_GENERATORS[typeId];
-  if (!generator) throw new Error(`Unknown palette type: ${typeId}`);
-  const bases = generator(h, s, l);
-  return bases.map((base, i) => {
-    if (locks[i] && current[i]) return current[i];
-    return hslToHex(base[0], base[1], base[2]);
-  });
+function getSplitContrast({ h, s, l }) {
+  return [
+    { hex: hslToHex(h,            s, l), label:'Source color' },
+    { hex: hslToHex(rot(h, 150), s, l), label:'Split 1' },
+    { hex: hslToHex(rot(h, 210), s, l), label:'Split 2' },
+  ];
 }
 
-export function generateFreshPalette(typeId, h, s, l) {
-  return generatePalette(typeId, h, s, l, [], []);
+export function getHarmonies(sourceHex, brandId = null, matchCount = 3) {
+  const hsl = hexToHsl(sourceHex);
+  if (!hsl) return null;
+
+  const calculators = {
+    tone_on_tone:   getToneOnTone,
+    fabric_sisters: getFabricSisters,
+    bold_contrast:  getBoldContrast,
+    lively_trio:    getLivelyTrio,
+    split_contrast: getSplitContrast,
+  };
+
+  const harmonies = {};
+  for (const [key, calc] of Object.entries(calculators)) {
+    const idealColors = calc(hsl);
+    const type = HARMONY_TYPES[key];
+    const fabricMatches = idealColors.map(ideal => ({
+      idealHex: ideal.hex,
+      label:    ideal.label,
+      matches:  findClosestColors(ideal.hex, matchCount, brandId),
+    }));
+    harmonies[key] = { type, idealColors, fabricMatches };
+  }
+
+  return { sourceHex, sourceHsl: hsl, harmonies };
 }
 
-// ─────────────────────────────────────────────
-// Re-stitch: regenerate only unlocked positions
-// ─────────────────────────────────────────────
-
-export function reStitch(typeId, h, s, l, locks, current) {
-  const prev = [...current];
-  const colors = generatePalette(typeId, h, s, l, locks, current);
-  const changedFlags = colors.map((c, i) => !locks[i] && c !== prev[i]);
-  return { colors, changedFlags };
+export function getSingleHarmony(sourceHex, harmonyId, brandId = null, matchCount = 3) {
+  const result = getHarmonies(sourceHex, brandId, matchCount);
+  return result ? (result.harmonies[harmonyId] || null) : null;
 }
 
-// ─────────────────────────────────────────────
-// Anthropic API — Palette Advisor
-//
-// API key must come from a secure config — never hardcode it.
-// Add to app.json: { "extra": { "anthropicApiKey": "sk-ant-..." } }
-// then read via: import Constants from 'expo-constants';
-//                const key = Constants.expoConfig?.extra?.anthropicApiKey;
-// ─────────────────────────────────────────────
-
-export function buildAdvisorPrompt(paletteTypeLabel, anchorHex, colors) {
-  return `You are the AI advisor inside Nimble Needle (N2), a mobile app built for quilters and bag makers.
-
-A quilter has chosen the "${paletteTypeLabel}" palette with anchor fabric color ${anchorHex}.
-The full suggested palette is: ${colors.join(', ')}.
-
-Give warm, practical advice for how to use this palette in a quilt.
-Write exactly 3 short tips. Each tip must be 1-2 sentences max.
-Write for quilters who are not color theory experts — plain everyday language only, no jargon.
-
-Respond ONLY with a JSON array of exactly 3 objects, each with keys:
-- "heading": 3-5 words, no punctuation
-- "body": 1-2 plain sentences
-
-No preamble, no markdown, no backticks, no extra text outside the JSON array.`;
-}
-
-export async function fetchPaletteAdvice(paletteTypeLabel, anchorHex, colors, apiKey) {
-  if (!apiKey) throw new Error('ANTHROPIC_API_KEY_MISSING');
-
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1000,
-      messages: [{ role: 'user', content: buildAdvisorPrompt(paletteTypeLabel, anchorHex, colors) }],
-    }),
-  });
-
-  const data = await response.json();
-  const raw = data.content
-    .map(b => b.text || '')
-    .join('')
-    .replace(/```json|```/g, '')
-    .trim();
-
-  return JSON.parse(raw);
+export function describeColor(hex) {
+  const hsl = hexToHsl(hex);
+  if (!hsl) return '';
+  const { h, s, l } = hsl;
+  const hue = h < 15 || h >= 345 ? 'red'
+    : h < 45  ? 'orange'      : h < 75  ? 'yellow'
+    : h < 105 ? 'yellow-green': h < 150 ? 'green'
+    : h < 180 ? 'teal'        : h < 210 ? 'cyan'
+    : h < 240 ? 'blue'        : h < 270 ? 'blue-violet'
+    : h < 300 ? 'violet'      : h < 330 ? 'magenta'
+    : 'pink';
+  const sat  = s < 20 ? 'very muted' : s < 50 ? 'softly saturated' : s < 80 ? 'vibrant' : 'intensely saturated';
+  const val  = l < 25 ? 'dark'       : l < 50 ? 'mid-dark'         : l < 75 ? 'mid-light' : 'light';
+  const warm = h < 180 ? 'warm' : 'cool';
+  return `A ${warm}, ${sat} ${hue} in the ${val} value range`;
 }

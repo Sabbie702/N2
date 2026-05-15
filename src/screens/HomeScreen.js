@@ -5,13 +5,21 @@ import React from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert,
 } from 'react-native';
-import Svg, { Path, Rect, Line, Defs, LinearGradient, Stop } from 'react-native-svg';
+import Svg, { Path, Line, Rect as SvgRect, Circle as SvgCircle } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { DrawerActions } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAuth } from '../contexts/AuthContext';
 import COLORS from '../styles/colors';
 
-const USER_NAME = 'Sabbie';
+// ─── PNG Assets ───────────────────────────────────────────────────────────────
+const IMG = {
+  logo:            require('../../assets/images/logo.png'),
+  fabricStackHero: require('../../assets/images/fabric_stack_hero.png'),
+  stashIcon:       require('../../assets/images/stash_icon.png'),
+  discoverIcon:    require('../../assets/images/discover_icon.png'),
+  threadFlowBg:    require('../../assets/images/thread_flow_bg.png'),
+};
 
 // ─── App Logo ──────────────────────────────────────────────────────────────────
 export function AppLogo({ size = 58 }) {
@@ -120,8 +128,8 @@ function HeroCard({ onPress }) {
       <View style={s.heroContent}>
         <Text style={s.heroTitle}>Projects</Text>
         <Text style={s.heroSubtitle}>Organize & Love{'\n'}Your Fabric</Text>
-        <View style={s.heroChevron}>
-          <Ionicons name="chevron-forward" size={26} color="#fff" />
+        <View style={s.heroCTA} accessibilityLabel="Go to Projects">
+          <Ionicons name="arrow-forward" size={22} color="#fff" />
         </View>
       </View>
     </TouchableOpacity>
@@ -171,10 +179,19 @@ function FeatureCard({ title, subtitle, tone, illustration, onPress }) {
     <TouchableOpacity style={[s.featureCard, { backgroundColor: bg }]} onPress={onPress} activeOpacity={0.95}>
       <Text style={s.featureTitle}>{title}</Text>
       <Text style={s.featureSub}>{subtitle}</Text>
-      <View style={[s.featureChevron, { backgroundColor: btnColor }]}>
-        <Ionicons name="chevron-forward" size={22} color="#fff" />
+
+      {/* Arrow button bottom-left */}
+      <View style={[s.featureArrow, { backgroundColor: btnColor }]}>
+        <Ionicons name="arrow-forward" size={18} color="#fff" />
       </View>
-      {illustration}
+
+      {/* Illustration — fills right+bottom area */}
+      <Image
+        source={iconSource}
+        style={s.featureIcon}
+        resizeMode="contain"
+        accessible={false}
+      />
     </TouchableOpacity>
   );
 }
@@ -182,12 +199,11 @@ function FeatureCard({ title, subtitle, tone, illustration, onPress }) {
 // ─── Quick Action ─────────────────────────────────────────────────────────────
 function QuickAction({ iconName, title, subtitle, onPress }) {
   return (
-    <TouchableOpacity style={s.qaCard} onPress={onPress} activeOpacity={0.9}>
+    <TouchableOpacity style={s.qaCard} onPress={onPress} activeOpacity={0.9}
+      accessibilityLabel={title}>
       <View style={s.qaIconWrap}>
         <Ionicons name={iconName} size={28} color={COLORS.DEEP_PLUM} />
       </View>
-      <Text style={s.qaTitle}>{title}</Text>
-      <Text style={s.qaSub}>{subtitle}</Text>
     </TouchableOpacity>
   );
 }
@@ -195,33 +211,44 @@ function QuickAction({ iconName, title, subtitle, onPress }) {
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
+  const { displayName } = useAuth();
+  const USER_NAME = displayName || 'Friend';
 
   return (
     <View style={[s.container, { paddingTop: insets.top }]}>
+      {/* Decorative thread flow PNG background */}
+      <Image
+        source={IMG.threadFlowBg}
+        style={[StyleSheet.absoluteFill, { opacity: 0.4 }]}
+        resizeMode="cover"
+        accessible={false}
+      />
+
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
 
-        {/* Header */}
+        {/* Header: PNG logo + Playfair wordmark + hamburger */}
         <View style={s.header}>
           <View style={s.headerLeft}>
-            <AppLogo size={52} />
+            <AppLogo size={58} />
             <Text style={s.headerTitle}>Nimble Needle</Text>
           </View>
           <TouchableOpacity
             style={s.menuBtn}
             onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
             activeOpacity={0.85}
+            accessibilityLabel="Open menu"
           >
             <Ionicons name="menu" size={26} color={COLORS.DEEP_PLUM} />
           </TouchableOpacity>
         </View>
 
-        {/* Welcome */}
+        {/* Welcome block */}
         <View style={s.welcomeSection}>
           <Text style={s.welcomeTitle}>Welcome, {USER_NAME}!</Text>
           <View style={s.welcomeRow}>
-            <Text style={{ fontSize: 22 }}>💚</Text>
+            <StitchedHeart size={26} />
             <Text style={s.welcomeText}>
-              One stitch at a time, you're creating{'\n'}something beautiful.
+              One stitch at a time, you're creating something beautiful.
             </Text>
           </View>
         </View>
@@ -276,13 +303,13 @@ export default function HomeScreen({ navigation }) {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.LAVENDER_WHITE },
-  scroll:    { paddingBottom: 40 },
+  scroll: { paddingBottom: 100 },
 
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 18, paddingTop: 16, paddingBottom: 10,
   },
-  headerLeft:  { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   headerTitle: {
     fontFamily: 'PlayfairDisplay-Bold',
     fontSize: 24, fontWeight: '700', color: COLORS.MIDNIGHT, letterSpacing: -0.6,
@@ -300,8 +327,6 @@ const s = StyleSheet.create({
     fontSize: 28, fontWeight: '700', color: COLORS.MIDNIGHT,
     letterSpacing: -0.7, marginBottom: 8,
   },
-  welcomeRow:  { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  welcomeText: { flex: 1, fontSize: 15, color: 'rgba(45,27,78,0.72)', lineHeight: 22 },
 
   heroCard: {
     height: 196, marginHorizontal: 14, borderRadius: 24,
@@ -310,17 +335,20 @@ const s = StyleSheet.create({
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.12, shadowRadius: 28, elevation: 6,
   },
-  fabricLayer: {
-    position: 'absolute', height: 38, borderRadius: 16,
-    shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 4, elevation: 2,
+  heroImage: {
+    borderRadius: 26,
   },
-  accentDot: {
-    position: 'absolute', width: 8, height: 8, borderRadius: 4,
-    backgroundColor: '#F6C5D8',
+  heroPattern: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.42,
   },
   heroContent: {
-    position: 'absolute', left: 20, top: 0, bottom: 0,
-    justifyContent: 'center', maxWidth: 185,
+    position: 'absolute', left: 24, top: 0, bottom: 0,
+    justifyContent: 'center', maxWidth: 190,
   },
   heroTitle: {
     fontFamily: 'PlayfairDisplay-Bold',
@@ -335,19 +363,13 @@ const s = StyleSheet.create({
     backgroundColor: COLORS.DEEP_PLUM,
     alignItems: 'center', justifyContent: 'center',
     marginTop: 14,
-    shadowColor: COLORS.DEEP_PLUM,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35, shadowRadius: 8, elevation: 4,
   },
 
   featureRow: {
     flexDirection: 'row', gap: 12, marginHorizontal: 14, marginBottom: 24,
   },
   featureCard: {
-    height: 182, borderRadius: 24, padding: 16, overflow: 'hidden',
-    shadowColor: COLORS.MIDNIGHT,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.09, shadowRadius: 28, elevation: 4,
+    height: 216, borderRadius: 24, padding: 20, overflow: 'hidden',
   },
   featureTitle: {
     fontFamily: 'PlayfairDisplay-Bold',
@@ -358,7 +380,10 @@ const s = StyleSheet.create({
     position: 'absolute', bottom: 16, left: 16,
     width: 40, height: 40, borderRadius: 20,
     alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 6, elevation: 3,
+  },
+  featureIcon: {
+    position: 'absolute', bottom: 8, right: 8,
+    width: 80, height: 80,
   },
 
   sectionTitle: {
@@ -381,9 +406,8 @@ const s = StyleSheet.create({
   qaIconWrap: {
     width: 56, height: 56, borderRadius: 28,
     borderWidth: 2, borderStyle: 'dashed', borderColor: COLORS.SOFT_LAVENDER,
-    backgroundColor: 'rgba(245,240,250,0.6)',
     alignItems: 'center', justifyContent: 'center',
-    marginBottom: 8,
+    marginRight: 12,
   },
   qaTitle: {
     fontFamily: 'PlayfairDisplay-SemiBold',

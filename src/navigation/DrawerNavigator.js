@@ -11,7 +11,8 @@ import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
 
 import TabNavigator from './TabNavigator';
-import { AppLogo } from '../screens/HomeScreen';
+import { AppLogo, StitchedHeart } from '../screens/HomeScreen';
+import { useAuth } from '../contexts/AuthContext';
 import COLORS from '../styles/colors';
 
 const Drawer = createDrawerNavigator();
@@ -22,6 +23,8 @@ const CREAM_FAINT = 'rgba(255,247,233,0.28)';
 
 function MenuRow({ icon, label, variant = 'default', onPress }) {
   const isDanger = variant === 'danger';
+  const bg = isDanger ? '#fef2f2' : (iconBg || COLORS.LAVENDER_WHITE);
+  const iconColor = isDanger ? '#ef4444' : '#fff';
   return (
     <TouchableOpacity style={dr.menuRow} onPress={onPress} activeOpacity={0.75}>
       <View style={dr.menuLeft}>
@@ -36,6 +39,7 @@ function MenuRow({ icon, label, variant = 'default', onPress }) {
 }
 
 function CustomDrawerContent({ navigation }) {
+  const { displayName, signOut } = useAuth();
   const go = (screen) => {
     navigation.navigate('MainTabs', { screen: 'Home', params: { screen } });
     navigation.closeDrawer();
@@ -110,6 +114,7 @@ export default function DrawerNavigator() {
           backgroundColor: COLORS.MIDNIGHT,
           width: 270,
         },
+        overlayColor: 'rgba(45, 27, 78, 0.45)',
       }}
     >
       <Drawer.Screen name="MainTabs" component={TabNavigator} />
@@ -136,7 +141,7 @@ const dr = StyleSheet.create({
     fontSize: 11, fontWeight: '800',
     color: 'rgba(192,132,252,0.65)',
     letterSpacing: 1.5,
-    paddingHorizontal: 22, marginBottom: 10, marginTop: 4,
+    paddingHorizontal: 24, marginBottom: 10, marginTop: 4,
   },
   section: { paddingHorizontal: 12, gap: 8, marginBottom: 6 },
 

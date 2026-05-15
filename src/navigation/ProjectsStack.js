@@ -13,7 +13,7 @@ import ProjectsScreen         from '../screens/ProjectsScreen';
 import NewProjectScreen       from '../screens/NewProjectScreen';
 import ProjectWorkspaceScreen from '../screens/ProjectWorkspaceScreen';
 import EditProjectScreen      from '../screens/EditProjectScreen';
-import ColorWheelScreen       from '../screens/ColorWheelScreen';
+import ColorWheelNavigator    from './ColorWheelNavigator';
 import COLORS from '../styles/colors';
 
 const Stack = createNativeStackNavigator();
@@ -72,10 +72,10 @@ export default function ProjectsStack() {
         options={{ title: 'Edit Project' }}
       />
 
-      {/* ColorWheel — owns its own WizardHeader; native header hidden */}
+      {/* Color Corner — full sub-navigator */}
       <Stack.Screen
         name="ColorWheel"
-        component={ColorWheelScreen}
+        component={ColorWheelNavigator}
         options={{ headerShown: false }}
       />
 
