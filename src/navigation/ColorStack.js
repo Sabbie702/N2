@@ -1,9 +1,7 @@
-// ColorStack.js
-// Stack for the Colors tab.
-// ColorWheelScreen (main) and handles resume-editing push from ProjectsStack.
+// ColorStack.js — Color Corner palette builder tab.
 
 import React from 'react';
-import { TouchableOpacity, Text } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { DrawerActions } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,7 +24,7 @@ export default function ColorStack() {
         name="ColorWheelMain"
         component={ColorWheelScreen}
         options={({ navigation }) => ({
-          title: 'Color Wheel',
+          title: 'Color Corner',
           headerRight: () => (
             <TouchableOpacity
               onPress={() => navigation.dispatch(DrawerActions.openDrawer())}

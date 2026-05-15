@@ -1,9 +1,9 @@
 // TabNavigator.js
-// 4-tab bottom navigator: Projects, Stash, Discover (+ hidden Home as initial route).
-// Color Wheel is accessible from Home Quick Actions and from within Projects.
+// 4 visible tabs: Stash, Projects, Colors, Discover.
+// Home is hidden as the initial route so the tab bar renders on Home screens.
 
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -11,11 +11,11 @@ import StashScreen    from '../screens/StashScreen';
 import ProjectsStack  from './ProjectsStack';
 import DiscoverScreen from '../screens/DiscoverScreen';
 import HomeStack      from './HomeStack';
+import ColorStack     from './ColorStack';
 import COLORS from '../styles/colors';
 
 const Tab = createBottomTabNavigator();
 
-// Active indicator dot + icon
 function TabIcon({ icon, iconFocused, focused }) {
   return (
     <View style={{ alignItems: 'center', paddingTop: 2 }}>
@@ -54,7 +54,7 @@ export default function TabNavigator() {
         headerTitleStyle: { fontWeight: 'bold' },
       }}
     >
-      {/* Home — hidden from bar; initial route so tab bar shows on Home screens */}
+      {/* Home — hidden; initial route so tab bar renders on Home screens */}
       <Tab.Screen
         name="Home"
         component={HomeStack}
@@ -62,17 +62,6 @@ export default function TabNavigator() {
           headerShown: false,
           tabBarItemStyle: { display: 'none' },
           tabBarButton: () => null,
-        }}
-      />
-
-      <Tab.Screen
-        name="Projects"
-        component={ProjectsStack}
-        options={{
-          headerShown: false,
-          tabBarIcon: ({ focused }) => (
-            <TabIcon icon="grid-outline" iconFocused="grid" focused={focused} />
-          ),
         }}
       />
 
@@ -88,12 +77,35 @@ export default function TabNavigator() {
       />
 
       <Tab.Screen
+        name="Projects"
+        component={ProjectsStack}
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon="grid-outline" iconFocused="grid" focused={focused} />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="Colors"
+        component={ColorStack}
+        options={{
+          headerShown: false,
+          title: 'Colors',
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon="color-palette-outline" iconFocused="color-palette" focused={focused} />
+          ),
+        }}
+      />
+
+      <Tab.Screen
         name="Discover"
         component={DiscoverScreen}
         options={{
           title: 'Discover',
           tabBarIcon: ({ focused }) => (
-            <TabIcon icon="sparkles-outline" iconFocused="sparkles" focused={focused} />
+            <TabIcon icon="compass-outline" iconFocused="compass" focused={focused} />
           ),
         }}
       />
