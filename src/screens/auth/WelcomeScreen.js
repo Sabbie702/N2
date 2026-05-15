@@ -1,9 +1,11 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
+import {
+  View, Text, Image, TouchableOpacity, StyleSheet, StatusBar,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { WelcomeSplashBackground } from '../../components/auth/AuthAssets';
 import COLORS from '../../styles/colors';
 
-const SPLASH_BG = require('../../../assets/images/splash_bg.png');
 const LOGO = require('../../../assets/images/logo.png');
 
 export default function WelcomeScreen({ navigation }) {
@@ -12,31 +14,35 @@ export default function WelcomeScreen({ navigation }) {
   return (
     <View style={s.container}>
       <StatusBar barStyle="light-content" />
-      <Image source={SPLASH_BG} style={StyleSheet.absoluteFill} resizeMode="cover" />
-      <View style={[StyleSheet.absoluteFill, s.overlay]} />
+      <View style={StyleSheet.absoluteFill}>
+        <WelcomeSplashBackground />
+        <View style={s.overlay} />
+      </View>
 
       <View style={[s.content, { paddingTop: insets.top + 60, paddingBottom: insets.bottom + 40 }]}>
         <View style={s.brandSection}>
-          <Image source={LOGO} style={s.logo} resizeMode="contain" />
+          <View style={s.logoWrap}>
+            <Image source={LOGO} style={s.logo} resizeMode="cover" />
+          </View>
           <Text style={s.appName}>Nimble Needle</Text>
           <Text style={s.tagline}>Your creative projects,{'\n'}all in one place</Text>
         </View>
 
         <View style={s.buttonSection}>
           <TouchableOpacity
-            style={s.loginBtn}
+            style={s.primaryBtn}
             onPress={() => navigation.navigate('Login')}
-            activeOpacity={0.9}
+            activeOpacity={0.85}
           >
-            <Text style={s.loginBtnText}>Log In</Text>
+            <Text style={s.primaryBtnText}>Log In</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={s.createBtn}
+            style={s.secondaryBtn}
             onPress={() => navigation.navigate('CreateAccount')}
-            activeOpacity={0.9}
+            activeOpacity={0.85}
           >
-            <Text style={s.createBtnText}>Create Account</Text>
+            <Text style={s.secondaryBtnText}>Create Account</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -46,50 +52,63 @@ export default function WelcomeScreen({ navigation }) {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.DEEP_PLUM },
-  overlay: { backgroundColor: 'rgba(91, 45, 142, 0.75)' },
+  overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(45, 27, 78, 0.12)' },
   content: {
     flex: 1,
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: 28,
   },
-  brandSection: { alignItems: 'center', marginTop: 60 },
-  logo: { width: 120, height: 120, borderRadius: 30, marginBottom: 24 },
+  brandSection: { alignItems: 'center', marginTop: 44 },
+  logoWrap: {
+    width: 122,
+    height: 122,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    marginBottom: 18,
+  },
+  logo: { width: 132, height: 132, transform: [{ scale: 1.03 }] },
   appName: {
-    fontSize: 36,
+    fontSize: 35,
     fontFamily: 'PlayfairDisplay_900Black',
     color: '#fff',
-    letterSpacing: -1,
+    letterSpacing: -0.5,
     marginBottom: 12,
   },
   tagline: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'Inter_400Regular',
-    color: 'rgba(255,255,255,0.8)',
+    color: COLORS.MINT,
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 22,
   },
-  buttonSection: { width: '100%', gap: 14 },
-  loginBtn: {
-    backgroundColor: '#fff',
-    borderRadius: 28,
-    paddingVertical: 16,
+  buttonSection: {
+    width: '100%',
+    gap: 12,
+  },
+  primaryBtn: {
+    backgroundColor: COLORS.MINT,
+    borderRadius: 14,
+    minHeight: 54,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  loginBtnText: {
+  primaryBtnText: {
     fontSize: 17,
     fontFamily: 'Inter_700Bold',
-    color: COLORS.DEEP_PLUM,
+    color: COLORS.MIDNIGHT,
   },
-  createBtn: {
+  secondaryBtn: {
     backgroundColor: 'transparent',
-    borderRadius: 28,
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.5)',
-    paddingVertical: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.68)',
+    minHeight: 54,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  createBtnText: {
+  secondaryBtnText: {
     fontSize: 17,
     fontFamily: 'Inter_700Bold',
     color: '#fff',

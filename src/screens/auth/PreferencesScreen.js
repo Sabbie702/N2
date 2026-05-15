@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicator,
+  View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,26 +11,22 @@ const PREF_OPTIONS = [
   {
     key: 'quilt_projects',
     label: 'Track Quilt Projects',
-    subtitle: 'Organize patterns, fabrics & progress',
-    icon: require('../../../assets/images/new_project_icon.png'),
+    icon: 'sparkles-outline',
   },
   {
     key: 'bag_projects',
     label: 'Track Bag Projects',
-    subtitle: 'Plan and manage bag creations',
-    icon: require('../../../assets/images/bag_projects_icon.png'),
+    icon: 'bag-handle-outline',
   },
   {
     key: 'manage_stash',
     label: 'Manage My Stash',
-    subtitle: 'Catalog your fabric collection',
-    icon: require('../../../assets/images/stash_icon.png'),
+    icon: 'layers-outline',
   },
   {
     key: 'get_inspired',
     label: 'Get Inspired',
-    subtitle: 'Discover patterns & color palettes',
-    icon: require('../../../assets/images/discover_icon.png'),
+    icon: 'bulb-outline',
   },
 ];
 
@@ -62,12 +58,14 @@ export default function PreferencesScreen({ navigation }) {
   return (
     <View style={[s.container, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 }]}>
       <View style={s.content}>
-        <Text style={s.title}>What are you most excited{'\n'}to use Nimble Needle for?</Text>
-        <Text style={s.subtitle}>
-          Select all that apply, {displayName || 'friend'}! This helps us personalize your experience.
-        </Text>
+        <View style={s.header}>
+          <Text style={s.title}>What are you most excited{'\n'}to use Nimble Needle for?</Text>
+          <Text style={s.subtitle}>
+            Select all that apply, {displayName || 'friend'}!
+          </Text>
+        </View>
 
-        <View style={s.optionsWrap}>
+        <View style={s.grid}>
           {PREF_OPTIONS.map((opt) => {
             const isSelected = selected.includes(opt.key);
             return (
@@ -77,13 +75,12 @@ export default function PreferencesScreen({ navigation }) {
                 onPress={() => toggle(opt.key)}
                 activeOpacity={0.85}
               >
-                <Image source={opt.icon} style={s.optionIcon} resizeMode="contain" />
-                <View style={s.optionText}>
-                  <Text style={s.optionLabel}>{opt.label}</Text>
-                  <Text style={s.optionSub}>{opt.subtitle}</Text>
+                <View style={s.iconBadge}>
+                  <Ionicons name={opt.icon} size={34} color={COLORS.DEEP_PLUM} />
                 </View>
+                <Text style={s.optionLabel}>{opt.label}</Text>
                 <View style={[s.checkbox, isSelected && s.checkboxSelected]}>
-                  {isSelected && <Ionicons name="checkmark" size={16} color="#fff" />}
+                  {isSelected && <Ionicons name="checkmark" size={14} color="#fff" />}
                 </View>
               </TouchableOpacity>
             );
@@ -114,45 +111,70 @@ const s = StyleSheet.create({
     justifyContent: 'space-between',
   },
   content: { flex: 1 },
+  header: {
+    alignItems: 'center',
+    marginTop: 16,
+    marginBottom: 24,
+  },
 
   title: {
-    fontSize: 26, fontFamily: 'PlayfairDisplay_900Black',
+    fontSize: 25, fontFamily: 'PlayfairDisplay_900Black',
     color: COLORS.MIDNIGHT, letterSpacing: -0.5,
-    lineHeight: 34, marginBottom: 10, marginTop: 20,
+    lineHeight: 33, marginBottom: 10,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 15, fontFamily: 'Inter_400Regular',
-    color: 'rgba(45,27,78,0.6)', lineHeight: 22, marginBottom: 28,
+    color: 'rgba(45,27,78,0.6)', lineHeight: 22,
+    textAlign: 'center',
   },
 
-  optionsWrap: { gap: 12 },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
   optionCard: {
-    flexDirection: 'row', alignItems: 'center',
+    width: '48%',
+    minHeight: 136,
     backgroundColor: '#fff',
-    borderRadius: 20, padding: 16,
-    borderWidth: 2, borderColor: 'transparent',
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#E5DCEF',
     shadowColor: COLORS.MIDNIGHT,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05, shadowRadius: 12, elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07, shadowRadius: 6, elevation: 2,
+    alignItems: 'center',
   },
   optionCardSelected: {
     borderColor: COLORS.DEEP_PLUM,
     backgroundColor: 'rgba(91,45,142,0.04)',
   },
-  optionIcon: { width: 44, height: 44, marginRight: 14 },
-  optionText: { flex: 1 },
-  optionLabel: {
-    fontSize: 15, fontFamily: 'Inter_700Bold',
-    color: COLORS.MIDNIGHT, marginBottom: 2,
+  iconBadge: {
+    width: 60,
+    height: 60,
+    borderRadius: 18,
+    backgroundColor: 'rgba(192,132,252,0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
   },
-  optionSub: {
-    fontSize: 12, fontFamily: 'Inter_400Regular',
-    color: 'rgba(45,27,78,0.5)', lineHeight: 16,
+  optionLabel: {
+    fontSize: 14, fontFamily: 'Inter_700Bold',
+    color: COLORS.MIDNIGHT,
+    textAlign: 'center',
+    lineHeight: 19,
   },
   checkbox: {
-    width: 26, height: 26, borderRadius: 13,
-    borderWidth: 2, borderColor: 'rgba(192,132,252,0.35)',
-    alignItems: 'center', justifyContent: 'center', marginLeft: 10,
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 24, height: 24, borderRadius: 7,
+    borderWidth: 1, borderColor: 'rgba(192,132,252,0.35)',
+    alignItems: 'center', justifyContent: 'center',
   },
   checkboxSelected: {
     backgroundColor: COLORS.DEEP_PLUM,
@@ -161,8 +183,11 @@ const s = StyleSheet.create({
 
   continueBtn: {
     backgroundColor: COLORS.DEEP_PLUM,
-    borderRadius: 28, paddingVertical: 16,
+    borderRadius: 14, paddingVertical: 16,
     alignItems: 'center',
+    shadowColor: '#5B2D8E',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35, shadowRadius: 12, elevation: 4,
   },
   continueBtnDisabled: { opacity: 0.5 },
   continueBtnText: {

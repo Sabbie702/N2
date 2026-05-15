@@ -96,7 +96,7 @@ function CustomDrawerContent({ navigation }) {
       </ScrollView>
 
       <View style={dr.footer}>
-        <Text style={dr.footerText}>N2 Nimble Needle · V1.2</Text>
+        <Text style={dr.footerText}>N2 Nimble Needle · V1.8</Text>
       </View>
     </SafeAreaView>
   );

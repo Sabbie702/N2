@@ -9,7 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import StashScreen    from '../screens/StashScreen';
 import ProjectsStack  from './ProjectsStack';
-import DiscoverScreen from '../screens/DiscoverScreen';
+import DiscoverStack  from './DiscoverStack';
 import HomeStack      from './HomeStack';
 import ColorStack     from './ColorStack';
 import COLORS from '../styles/colors';
@@ -116,8 +116,9 @@ export default function TabNavigator() {
 
       <Tab.Screen
         name="Discover"
-        component={DiscoverScreen}
+        component={DiscoverStack}
         options={{
+          headerShown: false,
           title: 'Discover',
           tabBarIcon: ({ focused }) => (
             <TabIcon icon="compass-outline" iconFocused="compass" focused={focused} />
