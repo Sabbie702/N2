@@ -13,6 +13,11 @@ import NotesScreen     from '../screens/NotesScreen';
 import ProfileScreen   from '../screens/ProfileScreen';
 import SettingsScreen  from '../screens/SettingsScreen';
 import ScrapbookScreen from '../screens/ScrapbookScreen';
+import CalculatorHub      from '../screens/calculators/CalculatorHub';
+import BackingBattingCalc from '../screens/calculators/BackingBattingCalc';
+import BindingCalc        from '../screens/calculators/BindingCalc';
+import BorderCalc         from '../screens/calculators/BorderCalc';
+import BedQuiltSizes      from '../screens/calculators/BedQuiltSizes';
 import COLORS from '../styles/colors';
 
 const Stack = createNativeStackNavigator();
@@ -65,6 +70,31 @@ export default function HomeStack({ navigation }) {
         name="Scrapbook"
         component={ScrapbookScreen}
         options={{ title: 'Scrapbook' }}
+      />
+      <Stack.Screen
+        name="CalculatorHub"
+        component={CalculatorHub}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="BackingBatting"
+        component={BackingBattingCalc}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Binding"
+        component={BindingCalc}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="BorderYardage"
+        component={BorderCalc}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="BedQuiltSizes"
+        component={BedQuiltSizes}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

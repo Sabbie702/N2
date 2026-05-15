@@ -5,7 +5,7 @@
 
 import React from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, Image, StyleSheet,
+  View, Text, ScrollView, TouchableOpacity, Image, ImageBackground, StyleSheet,
 } from 'react-native';
 import Svg, { Path, Line, Rect as SvgRect, Circle as SvgCircle } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,9 +20,6 @@ const IMG = {
   fabricStackHero: require('../../assets/images/fabric_stack_hero.png'),
   stashIcon:       require('../../assets/images/stash_icon.png'),
   discoverIcon:    require('../../assets/images/discover_icon.png'),
-  newProjectIcon:  require('../../assets/images/new_project_icon.png'),
-  colorCornerIcon: require('../../assets/images/color_corner_icon.png'),
-  quiltCalcIcon:   require('../../assets/images/quilt_calculator_icon.png'),
   threadFlowBg:    require('../../assets/images/thread_flow_bg.png'),
 };
 
@@ -69,15 +66,14 @@ function NotesIconSvg() {
 function HeroCard({ onPress }) {
   return (
     <TouchableOpacity style={s.heroCard} onPress={onPress} activeOpacity={0.97}>
-      <View style={[StyleSheet.absoluteFill, s.heroGradient]} />
-
-      {/* Fabric stack PNG */}
-      <Image
+      <ImageBackground
         source={IMG.fabricStackHero}
-        style={s.heroIllustration}
-        resizeMode="contain"
-        accessible={false}
-      />
+        style={StyleSheet.absoluteFill}
+        imageStyle={s.heroImage}
+        resizeMode="cover"
+      >
+        <Image source={IMG.threadFlowBg} style={s.heroPattern} resizeMode="cover" />
+      </ImageBackground>
 
       <View style={s.heroContent}>
         <Text style={s.heroTitle}>Projects</Text>
@@ -124,14 +120,12 @@ function FeatureCard({ title, subtitle, tone, iconSource, onPress }) {
 }
 
 // ─── Quick Action Card (horizontal: icon left, text right) ───────────────────
-function QuickAction({ iconSource, iconSvg, title, subtitle, onPress }) {
+function QuickAction({ iconName, iconSvg, title, subtitle, onPress }) {
   return (
     <TouchableOpacity style={s.qaCard} onPress={onPress} activeOpacity={0.9}
       accessibilityLabel={title}>
       <View style={s.qaIconWrap}>
-        {iconSource ? (
-          <Image source={iconSource} style={{ width: 36, height: 36 }} resizeMode="contain" />
-        ) : iconSvg}
+        {iconSvg || <Ionicons name={iconName} size={30} color={COLORS.DEEP_PLUM} />}
         {/* Small mint + badge */}
         <View style={s.qaBadge}>
           <Ionicons name="add" size={12} color="#fff" />
@@ -220,7 +214,7 @@ export default function HomeScreen({ navigation }) {
         <View style={s.qaGrid}>
           <View style={s.qaGridRow}>
             <QuickAction
-              iconSource={IMG.newProjectIcon}
+              iconName="grid-outline"
               title="New Project"
               subtitle="Start a new quilt project"
               onPress={() => navigation.navigate('Projects', { screen: 'NewProject' })}
@@ -234,16 +228,16 @@ export default function HomeScreen({ navigation }) {
           </View>
           <View style={s.qaGridRow}>
             <QuickAction
-              iconSource={IMG.colorCornerIcon}
+              iconName="color-palette-outline"
               title="Color Corner"
-              subtitle="Find your perfect palette"
+              subtitle="Pick your perfect palette"
               onPress={() => navigation.navigate('Projects', { screen: 'ColorWheel' })}
             />
             <QuickAction
-              iconSource={IMG.quiltCalcIcon}
+              iconName="calculator-outline"
               title="Quilt Calculator"
               subtitle="Calculate fabric needs"
-              onPress={() => {}}
+              onPress={() => navigation.navigate('CalculatorHub')}
             />
           </View>
         </View>
@@ -271,7 +265,7 @@ const s = StyleSheet.create({
   },
   menuBtn: {
     width: 48, height: 48, borderRadius: 24,
-    backgroundColor: 'rgba(192,132,252,0.12)',
+    backgroundColor: 'rgba(192,132,252,0.15)',
     alignItems: 'center', justifyContent: 'center',
   },
 
@@ -290,33 +284,37 @@ const s = StyleSheet.create({
 
   // Hero card
   heroCard: {
-    height: 220, marginHorizontal: 20, borderRadius: 28,
+    height: 232, marginHorizontal: 20, borderRadius: 26,
     overflow: 'hidden', marginBottom: 16,
     shadowColor: COLORS.MIDNIGHT,
     shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 0.12, shadowRadius: 32, elevation: 6,
+    shadowOpacity: 0.12, shadowRadius: 32, elevation: 5,
   },
-  heroGradient: {
-    backgroundColor: '#E8D4F6',
+  heroImage: {
+    borderRadius: 26,
   },
-  heroIllustration: {
-    position: 'absolute', right: -10, bottom: 0,
-    width: 200, height: 200 * (220 / 360),
+  heroPattern: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.42,
   },
   heroContent: {
     position: 'absolute', left: 24, top: 0, bottom: 0,
-    justifyContent: 'center', maxWidth: 180,
+    justifyContent: 'center', maxWidth: 190,
   },
   heroTitle: {
-    fontSize: 32, fontFamily: 'PlayfairDisplay_900Black',
-    color: COLORS.MIDNIGHT, letterSpacing: -1, lineHeight: 36,
+    fontSize: 31, fontFamily: 'PlayfairDisplay_900Black',
+    color: COLORS.MIDNIGHT, letterSpacing: -0.8, lineHeight: 35,
   },
   heroSubtitle: {
     fontSize: 14, fontFamily: 'Inter_400Regular',
-    color: 'rgba(45,27,78,0.65)', marginTop: 6, lineHeight: 20,
+    color: 'rgba(45,27,78,0.66)', marginTop: 6, lineHeight: 20,
   },
   heroCTA: {
-    width: 48, height: 48, borderRadius: 24,
+    width: 52, height: 52, borderRadius: 26,
     backgroundColor: COLORS.DEEP_PLUM,
     alignItems: 'center', justifyContent: 'center',
     marginTop: 14,
@@ -328,10 +326,10 @@ const s = StyleSheet.create({
     marginHorizontal: 20, marginBottom: 24,
   },
   featureCard: {
-    height: 220, borderRadius: 26, padding: 20, overflow: 'hidden',
+    height: 216, borderRadius: 24, padding: 20, overflow: 'hidden',
   },
   featureTitle: {
-    fontSize: 22, fontFamily: 'PlayfairDisplay_900Black',
+    fontSize: 21, fontFamily: 'PlayfairDisplay_900Black',
     color: COLORS.MIDNIGHT,
   },
   featureSub: {
@@ -363,13 +361,14 @@ const s = StyleSheet.create({
   qaCard: {
     flex: 1, flexDirection: 'row', alignItems: 'center',
     backgroundColor: '#fff',
-    borderRadius: 18, padding: 14,
+    borderRadius: 20, paddingHorizontal: 14, paddingVertical: 12,
+    borderWidth: 1, borderColor: 'rgba(0,0,0,0.06)',
     shadowColor: COLORS.MIDNIGHT,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.06, shadowRadius: 16, elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07, shadowRadius: 6, elevation: 2,
   },
   qaIconWrap: {
-    width: 52, height: 52, borderRadius: 26,
+    width: 56, height: 56, borderRadius: 28,
     borderWidth: 2, borderStyle: 'dashed', borderColor: COLORS.SOFT_LAVENDER,
     alignItems: 'center', justifyContent: 'center',
     marginRight: 12,
@@ -383,11 +382,11 @@ const s = StyleSheet.create({
   },
   qaTextWrap: { flex: 1 },
   qaTitle: {
-    fontSize: 14, fontFamily: 'Inter_700Bold',
+    fontSize: 15, fontFamily: 'Inter_700Bold',
     color: COLORS.MIDNIGHT, lineHeight: 18,
   },
   qaSub: {
-    fontSize: 11, fontFamily: 'Inter_400Regular',
+    fontSize: 12, fontFamily: 'Inter_400Regular',
     color: 'rgba(45,27,78,0.5)',
     lineHeight: 15, marginTop: 2,
   },

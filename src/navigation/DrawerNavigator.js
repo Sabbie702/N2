@@ -106,6 +106,7 @@ function CustomDrawerContent({ navigation }) {
           <MenuRow icon="person"      iconBg={COLORS.SOFT_LAVENDER} label="Profile"              onPress={() => go('Profile')}  />
           <MenuRow icon="settings"    iconBg={COLORS.DEEP_PLUM}     label="App Settings"         onPress={() => go('Settings')} />
           <MenuRow icon="cube"        iconBg="#4EC9A0"               label="Storage Spots"        onPress={close} />
+          <MenuRow icon="calculator"  iconBg={COLORS.MINT}           label="Quilting Calculators" onPress={() => go('CalculatorHub')} />
           <MenuRow icon="book"        iconBg={COLORS.DEEP_PLUM}     label="App Help & Tutorials" onPress={close} />
         </View>
 
@@ -129,7 +130,7 @@ function CustomDrawerContent({ navigation }) {
       </ScrollView>
 
       <View style={dr.footer}>
-        <Text style={dr.footerText}>N2 Nimble Needle · V1.5.1</Text>
+        <Text style={dr.footerText}>N2 Nimble Needle · V1.7.0</Text>
       </View>
     </SafeAreaView>
   );
